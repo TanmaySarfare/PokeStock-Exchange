@@ -41,6 +41,7 @@
   const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
   const pctOf = (t) => (t.open ? (t.price / t.open - 1) * 100 : 0);
   const badge = (type) => `<span class="badge" style="--bc:${TYPE_COLORS[type] || "#555"}">${esc(type)}</span>`;
+  const ico = (id) => `<svg class="ico" aria-hidden="true"><use href="#i-${id}"></use></svg>`;
   const img = (src, cls, size) => `<img class="${cls}" src="${esc(src)}" width="${size}" height="${size}" loading="lazy" decoding="async" alt="">`;
   const el = (html) => { const t = document.createElement("template"); t.innerHTML = html.trim(); return t.content.firstElementChild; };
 
@@ -294,7 +295,7 @@
       const base = a.avg >= 0 ? "46,204,113" : "255,92,92";
       const bg = `linear-gradient(160deg, rgba(${base},${0.14 + inten * 0.5}), rgba(${base},${0.06 + inten * 0.3}))`;
       return `<div class="tile ${k === active ? "active" : ""}" data-sector="${k}" style="--tile-bg:${bg};--tc:${TYPE_COLORS[k]}">
-        <div class="t">${k}</div>
+        <div class="t">${ico("berry")}${k}</div>
         <div class="p ${cls(a.avg)}">${fmt.pct(a.avg)}</div>
         <div class="n">${a.n} listings · ★ ${a.best.symbol}</div></div>`;
     }).join("");
@@ -370,7 +371,7 @@
       if (!active || !agg[active]) { detail.hidden = true; return; }
       const a = agg[active];
       detail.hidden = false;
-      $("#sector-title").innerHTML = `${badge(active)} <span style="color:var(--text)">${active} sector</span> <small>${a.n} listings (primary + secondary exposure)</small>`;
+      $("#sector-title").innerHTML = `${ico("berry")} ${badge(active)} <span style="color:var(--text)">${active} sector</span> <small>${a.n} listings (primary + secondary exposure)</small>`;
       $("#sector-kpis").innerHTML = `
         <div><span class="lbl">Avg change</span><span class="val ${cls(a.avg)}">${fmt.pct(a.avg)}</span></div>
         <div><span class="lbl">Sector cap</span><span class="val">${fmt.big(a.cap)}</span></div>
@@ -488,7 +489,7 @@
   function renderNews(ul, items, compact) {
     const seen = new Set($$("li", ul).map((li) => li.dataset.id));
     items = items || [];
-    if (!items.length) { ul.innerHTML = `<li class="muted" style="display:block">No headlines yet. This one's flying under the radar.</li>`; return; }
+    if (!items.length) { ul.innerHTML = `<li class="muted" style="display:block">${ico("ball")} No headlines yet. This one's flying under the radar.</li>`; return; }
     ul.innerHTML = items.map((n) => `<li data-id="${n.id}" class="${seen.size && !seen.has(String(n.id)) ? "fresh" : ""}">
       <time>${fmt.time(n.time)}</time>
       <div><div class="head"><span class="kind">${n.kind}</span>${esc(n.headline)}</div>
@@ -565,7 +566,8 @@
         const who = r.bot
           ? `<span class="lb-name">${esc(r.name)}</span>${roleTag}<span class="lb-tag">${esc(r.tagline || "")}</span>`
           : `<span class="lb-name">${esc(r.name)}</span>${me ? `<span class="tag you">You</span>` : ""}${r.tagline ? `<span class="lb-tag">${esc(r.tagline)}</span>` : ""}`;
-        return `<tr class="${me ? "is-me" : ""}"><td class="muted">${i + 1}</td><td class="lb-who">${who}</td><td class="num">${fmt.money(r.net_worth)}</td><td class="num ${cls(r.pnl_pct)}">${fmt.pct(r.pnl_pct)}</td><td class="num">${r.holdings}</td><td>${r.top ? `<a href="#/t/${r.top}" class="sym">${r.top}</a>` : "—"}</td></tr>`;
+        const rankIco = i === 0 ? ico("master") : i === 1 ? ico("ultra") : i === 2 ? ico("great") : "";
+        return `<tr class="${me ? "is-me" : ""}"><td class="muted rank">${rankIco}<span>${i + 1}</span></td><td class="lb-who">${who}</td><td class="num">${fmt.money(r.net_worth)}</td><td class="num ${cls(r.pnl_pct)}">${fmt.pct(r.pnl_pct)}</td><td class="num">${r.holdings}</td><td>${r.top ? `<a href="#/t/${r.top}" class="sym">${r.top}</a>` : "—"}</td></tr>`;
       }).join("");
     }).catch(() => {});
     load();

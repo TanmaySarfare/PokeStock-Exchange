@@ -33,15 +33,33 @@ html, body {
     var(--bg);
   min-height: 100vh;
 }
+body::after {
+  content: ""; position: fixed; inset: 0; pointer-events: none; z-index: 0;
+  background:
+    url(/img/logo.svg) 4% 16% / 86px no-repeat,
+    url(/img/logo.svg) 96% 78% / 54px no-repeat,
+    url(/img/logo.svg) 92% 10% / 38px no-repeat,
+    url(/img/logo.svg) 8% 88% / 64px no-repeat,
+    url(/img/logo.svg) 48% 96% / 32px no-repeat;
+  opacity: .07;
+}
 a { color: inherit; text-decoration: none; }
 h1, h2, h3 { margin: 0; font-weight: 600; letter-spacing: -.01em; }
-/* Panel titles: condensed display caps with a gold-to-red marker bar. */
+.ico-sheet { position: absolute; width: 0; height: 0; overflow: hidden; }
+.ico { width: 1.15em; height: 1.15em; flex: none; display: inline-block; vertical-align: -0.18em; }
+.ico.lg { width: 36px; height: 36px; display: block; margin: 0 auto 8px; }
+h2 .ico { width: 28px; height: 28px; }
+.nav .ico, .composite .ico { width: 15px; height: 15px; }
+.movers-cols h3 .ico { width: 18px; height: 18px; }
+.more .ico { width: 16px; height: 16px; }
+.rank { display: flex; align-items: center; gap: 6px; }
+.rank .ico { width: 18px; height: 18px; }
+/* Panel titles: condensed display caps with a Poké-themed icon. */
 h2 {
-  display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
   font-family: var(--display); font-weight: 800; font-size: 28px; line-height: 1;
   letter-spacing: .03em; text-transform: uppercase; color: #f7f9fc; margin-bottom: 16px;
 }
-h2::before { content: ""; width: 4px; height: .8em; border-radius: 2px; background: linear-gradient(180deg, var(--accent), var(--accent-2)); }
 h2 small { font-family: var(--sans); font-size: 13px; font-weight: 500; color: var(--muted); letter-spacing: 0; text-transform: none; line-height: 1.3; }
 h2 small.count {
   font-family: var(--mono); font-size: 12px; font-weight: 600; color: var(--text-2); padding: 2px 9px; border-radius: 999px;
@@ -84,18 +102,20 @@ img { -webkit-user-drag: none; }
 }
 .brand-text b { color: #ffcb05; font-weight: 900; }
 .brand-sub { font-size: 10px; font-weight: 700; letter-spacing: .2em; text-transform: uppercase; color: #5b9bdc; }
-.composite, .account { display: flex; gap: 10px; align-items: baseline; padding: 6px 12px; border-radius: var(--r-sm); background: rgba(255,255,255,.025); border: 1px solid var(--line); }
+.composite, .account { display: flex; gap: 10px; align-items: center; padding: 6px 12px; border-radius: var(--r-sm); background: rgba(255,255,255,.025); border: 1px solid var(--line); }
 .lbl { color: var(--muted); font-size: 10.5px; text-transform: uppercase; letter-spacing: .1em; font-weight: 600; }
 .val { font-size: 15px; font-weight: 600; }
 .chg { font-weight: 600; font-size: 13px; }
 .nav { display: flex; gap: 2px; margin-left: auto; padding: 3px; border-radius: 10px; background: rgba(255,255,255,.03); border: 1px solid var(--line); }
-.nav a { padding: 7px 14px; border-radius: 8px; color: var(--muted); font-weight: 500; transition: color .2s, background .2s; }
+.nav a { padding: 7px 14px; border-radius: 8px; color: var(--muted); font-weight: 500; transition: color .2s, background .2s; display: inline-flex; align-items: center; gap: 7px; }
 .nav a:hover { color: var(--text); }
 .nav a.active { color: var(--text); background: var(--panel-2); box-shadow: 0 1px 0 rgba(255,255,255,.04) inset, 0 2px 8px rgba(0,0,0,.4); }
 .clock { color: var(--muted); display: flex; gap: 10px; align-items: center; font-size: 13px; }
-.live { width: 8px; height: 8px; border-radius: 50%; background: var(--down); box-shadow: 0 0 0 0 rgba(255,92,92,.5); transition: background .3s; }
-.live.on { background: var(--up); animation: pulse 2s infinite; }
-@keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(46,204,113,.55); } 70% { box-shadow: 0 0 0 7px rgba(46,204,113,0); } 100% { box-shadow: 0 0 0 0 rgba(46,204,113,0); } }
+.live { width: 16px; height: 16px; display: inline-flex; filter: grayscale(1) opacity(.45); transition: filter .3s; }
+.live .ico { width: 16px; height: 16px; }
+.live.on { filter: none; }
+.live.on .ico { animation: spinball 4s linear infinite; filter: drop-shadow(0 0 5px rgba(46,204,113,.55)); }
+@keyframes spinball { to { transform: rotate(360deg); } }
 
 /* ---------- ticker tape ---------- */
 .tape { position: relative; overflow: hidden; border-bottom: 1px solid var(--line); background: var(--bg-2); height: 36px;
@@ -108,7 +128,7 @@ img { -webkit-user-drag: none; }
 .tape-track .c { font-weight: 600; }
 @keyframes tape { from { transform: translateX(0); } to { transform: translateX(-50%); } }
 
-.view { padding: 22px 24px 70px; max-width: 1480px; margin: 0 auto; animation: fade .35s var(--ease); }
+.view { position: relative; z-index: 1; padding: 22px 24px 70px; max-width: 1480px; margin: 0 auto; animation: fade .35s var(--ease); }
 @keyframes fade { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
 
 /* ---------- market grid ---------- */
@@ -127,12 +147,12 @@ img { -webkit-user-drag: none; }
 .tile:hover { transform: translateY(-3px); box-shadow: 0 14px 28px -14px rgba(0,0,0,.85), 0 0 0 1px rgba(255,255,255,.1); }
 .tile.active { border-color: var(--tc); box-shadow: 0 0 0 2px var(--tc), 0 14px 28px -14px rgba(0,0,0,.85); }
 .tile .t { font-weight: 700; font-size: 15px; color: #f5f7fa; display: flex; align-items: center; gap: 8px; }
+.tile .t .ico { width: 16px; height: 16px; }
 .tile .t::before { content: ""; width: 11px; height: 11px; border-radius: 4px; background: var(--tc); box-shadow: 0 0 0 1px rgba(0,0,0,.35), 0 0 10px var(--tc); }
 .tile .p { font-size: 26px; font-weight: 800; letter-spacing: -.02em; font-family: var(--mono); }
 .tile .n { font-size: 12px; color: rgba(255,255,255,.7); font-family: var(--mono); }
 .sector-detail .list-head { margin-bottom: 14px; align-items: flex-start; }
 .sector-detail h2 { font-size: 26px; margin: 0; }
-.sector-detail h2::before { display: none; } /* the type badge acts as the marker */
 .sector-detail h2 small { font-size: 13px; }
 .sector-kpis { display: flex; gap: 12px; flex-wrap: wrap; }
 .sector-kpis div { display: flex; flex-direction: column; gap: 2px; padding: 10px 14px; border-radius: 10px; background: rgba(255,255,255,.025); border: 1px solid var(--line); min-width: 130px; }
@@ -145,11 +165,8 @@ img { -webkit-user-drag: none; }
   font-family: var(--display); font-weight: 800; font-size: 19px; line-height: 1; letter-spacing: .05em; text-transform: uppercase;
   padding: 6px 14px 6px 12px; border-radius: 999px; border: 1px solid transparent;
 }
-.movers-cols h3::before { font-size: 11px; font-family: var(--sans); }
 .movers-cols h3.up { background: var(--up-soft); border-color: rgba(46,204,113,.3); }
-.movers-cols h3.up::before { content: "▲"; }
 .movers-cols h3.down { background: var(--down-soft); border-color: rgba(255,92,92,.3); }
-.movers-cols h3.down::before { content: "▼"; }
 .movers-cols ul { list-style: none; margin: 0; padding: 0; }
 /* Header and rows share one grid template so every column lines up exactly. */
 .movers-cols .mv-head, .movers-cols li {
@@ -224,7 +241,7 @@ button:active { transform: translateY(1px); }
 @keyframes fu { 0% { color: #fff; text-shadow: 0 0 10px var(--up); } 100% { text-shadow: none; } }
 @keyframes fd { 0% { color: #fff; text-shadow: 0 0 10px var(--down); } 100% { text-shadow: none; } }
 .spark { width: 130px; height: 34px; vertical-align: middle; display: inline-block; }
-.more { display: block; margin: 16px auto 0; padding: 9px 22px; }
+.more { display: flex; align-items: center; gap: 8px; margin: 16px auto 0; padding: 9px 22px; }
 
 /* ---------- type badges ---------- */
 .badge {
@@ -316,7 +333,7 @@ button:active { transform: translateY(1px); }
 .bigs div { display: flex; flex-direction: column; gap: 4px; padding: 12px 14px; border-radius: 10px; background: rgba(255,255,255,.025); border: 1px solid var(--line); }
 .bigs .val { font-size: 21px; font-weight: 700; letter-spacing: -.02em; }
 #nw-chart { width: 100%; height: 110px; display: block; }
-.empty { display: none; }
+.empty { display: none; text-align: center; padding: 18px 0; }
 .sellbtn { font-size: 11.5px; padding: 4px 10px; }
 
 /* ---------- leaderboard ---------- */
