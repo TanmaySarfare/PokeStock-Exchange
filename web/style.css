@@ -135,6 +135,7 @@ img { -webkit-user-drag: none; }
   color: var(--muted); font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .1em;
 }
 .movers-cols .mv-head .num { text-align: right; }
+.movers-cols .mv-head .num:last-child { padding-right: 10px; } /* line up with the number inside the Chg% pill */
 .movers-cols li { border-radius: 10px; cursor: pointer; transition: background .2s; }
 .movers-cols li:hover { background: rgba(255,255,255,.04); }
 .movers-cols img { width: 44px; height: 44px; }
@@ -171,11 +172,15 @@ button:active { transform: translateY(1px); }
 .tbl th[data-sort] { cursor: pointer; transition: color .2s; }
 .tbl th[data-sort]:hover, .tbl th.sorted { color: var(--text); }
 .tbl th.sorted::after { content: " ↓"; color: var(--accent); }
-/* On right-aligned columns the arrow goes in front so the label stays flush with the values. */
-.tbl th.num.sorted::after { content: none; }
+/* Right-aligned columns: arrow goes in front so the label stays flush with the values,
+   and a zero-width trailer cancels the letter-spacing that follows the last glyph. */
+.tbl th.num::after, .mv-head .num::after { content: ""; display: inline-block; width: 0; margin-left: -.1em; }
 .tbl th.num.sorted::before { content: "↓ "; color: var(--accent); }
 .tbl th.num { font-family: var(--sans); }
 .tbl td .spark { display: block; margin-left: auto; }
+/* First/last columns sit flush with the panel edge so headers line up with panel titles and the movers list. */
+.tbl th:first-child, .tbl td:first-child { padding-left: 0; }
+.tbl th:last-child, .tbl td:last-child { padding-right: 0; }
 .tbl td { padding: 9px 12px; border-bottom: 1px solid var(--line); white-space: nowrap; transition: background .25s; font-size: 15px; }
 .tbl tbody tr { cursor: pointer; }
 .tbl tbody tr:hover td { background: rgba(255,255,255,.035); }
@@ -294,7 +299,7 @@ button:active { transform: translateY(1px); }
 .tag.champ { color: var(--accent); background: rgba(255,176,32,.12); border: 1px solid rgba(255,176,32,.35); }
 .tag.you { color: var(--accent); background: rgba(255,176,32,.14); border: 1px solid rgba(255,176,32,.35); }
 .tbl tr.is-me td { background: rgba(255,176,32,.06); }
-.tbl tr.is-me td:first-child { box-shadow: inset 3px 0 0 var(--accent); }
+.tbl tr.is-me td:first-child { color: var(--accent); font-weight: 700; }
 
 .toast {
   position: fixed; right: 22px; bottom: 22px; background: rgba(21,27,36,.92); backdrop-filter: blur(10px);
