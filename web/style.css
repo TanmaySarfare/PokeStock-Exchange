@@ -156,6 +156,7 @@ button:active { transform: translateY(1px); }
   text-align: left; color: var(--muted); font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: .1em;
   padding: 12px 12px; border-bottom: 1px solid var(--line-2); user-select: none; white-space: nowrap;
 }
+.tbl th.num, .tbl td.num { text-align: right; }
 .tbl th[data-sort] { cursor: pointer; transition: color .2s; }
 .tbl th[data-sort]:hover, .tbl th.sorted { color: var(--text); }
 .tbl th.sorted::after { content: " ↓"; color: var(--accent); }
