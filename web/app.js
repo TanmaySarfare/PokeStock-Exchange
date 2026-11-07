@@ -240,6 +240,66 @@
   // ---------- views ----------
   const views = {};
 
+  // Shared listing-row renderer + live updater (used by Market and Sectors).
+  function rowHTML(t, withBeta = true) {
+    const p = pctOf(t);
+    return `<tr data-sym="${t.symbol}">
+      <td class="muted">${t.dex}</td>
+      <td class="sym">${t.symbol}</td>
+      <td>${img(t.image, "sprite", 40)}${esc(t.name)}${t.rarity !== "None" ? ` <span class="badge rarity">${t.rarity[0]}</span>` : ""}</td>
+      <td>${badge(t.sector)}${t.subsector ? badge(t.subsector) : ""}</td>
+      <td class="num price">${t.price.toFixed(2)}</td>
+      <td class="num pct ${cls(p)}">${fmt.pct(p)}</td>
+      <td class="num"><canvas class="spark"></canvas></td>
+      <td class="num mcap">${fmt.big(t.price * t.shares)}</td>
+      ${withBeta ? `<td class="num muted">${(t.volatility * 100).toFixed(2)}</td>` : ""}
+    </tr>`;
+  }
+  function drawSparks(tbody) {
+    for (const tr of tbody.children) { const t = state.tickers.get(tr.dataset.sym); if (t) sparkline(tr.querySelector(".spark"), t.spark); }
+  }
+  function updateRows(tbody) {
+    for (const tr of tbody.children) {
+      const t = state.tickers.get(tr.dataset.sym); if (!t) continue;
+      const p = pctOf(t), priceCell = tr.querySelector(".price");
+      const old = parseFloat(priceCell.textContent);
+      priceCell.textContent = t.price.toFixed(2);
+      const pc = tr.querySelector(".pct"); pc.textContent = fmt.pct(p); pc.className = "num pct " + cls(p);
+      tr.querySelector(".mcap").textContent = fmt.big(t.price * t.shares);
+      if (t.price !== old) { tr.classList.remove("flash-up", "flash-down"); void tr.offsetWidth; tr.classList.add(t.price > old ? "flash-up" : "flash-down"); }
+      sparkline(tr.querySelector(".spark"), t.spark);
+    }
+  }
+
+  // Aggregate every type sector from live prices.
+  function sectorAgg() {
+    const agg = {};
+    for (const t of state.list) {
+      t.types = t.types || [t.sector, t.subsector].filter(Boolean);
+      for (const ty of t.types) {
+        agg[ty] ??= { type: ty, n: 0, sum: 0, best: null, worst: null, cap: 0, members: [] };
+        const a = agg[ty], p = pctOf(t);
+        a.n++; a.sum += p; a.members.push(t);
+        if (ty === t.sector) a.cap += t.price * t.shares;
+        if (!a.best || p > pctOf(a.best)) a.best = t;
+        if (!a.worst || p < pctOf(a.worst)) a.worst = t;
+      }
+    }
+    for (const a of Object.values(agg)) a.avg = a.sum / a.n;
+    return agg;
+  }
+  function renderHeatmap(hm, agg, active) {
+    hm.innerHTML = Object.keys(TYPE_COLORS).filter((k) => agg[k]).map((k) => {
+      const a = agg[k], inten = Math.min(1, Math.abs(a.avg) / 4);
+      const base = a.avg >= 0 ? "46,204,113" : "255,92,92";
+      const bg = `linear-gradient(160deg, rgba(${base},${0.14 + inten * 0.5}), rgba(${base},${0.06 + inten * 0.3}))`;
+      return `<div class="tile ${k === active ? "active" : ""}" data-sector="${k}" style="--tile-bg:${bg};--tc:${TYPE_COLORS[k]}">
+        <div class="t">${k}</div>
+        <div class="p ${cls(a.avg)}">${fmt.pct(a.avg)}</div>
+        <div class="n">${a.n} listings · ★ ${a.best.symbol}</div></div>`;
+    }).join("");
+  }
+
   views.market = () => {
     const root = $("#view");
     root.appendChild($("#tpl-market").content.cloneNode(true));
@@ -259,73 +319,23 @@
       return rows;
     }
 
-    function rowHTML(t) {
-      const p = pctOf(t);
-      return `<tr data-sym="${t.symbol}">
-        <td class="muted">${t.dex}</td>
-        <td class="sym">${t.symbol}</td>
-        <td>${img(t.image, "sprite", 34)}${esc(t.name)}${t.rarity !== "None" ? ` <span class="badge rarity">${t.rarity[0]}</span>` : ""}</td>
-        <td>${badge(t.sector)}${t.subsector ? badge(t.subsector) : ""}</td>
-        <td class="num price">${t.price.toFixed(2)}</td>
-        <td class="num pct ${cls(p)}">${fmt.pct(p)}</td>
-        <td class="num"><canvas class="spark"></canvas></td>
-        <td class="num mcap">${fmt.big(t.price * t.shares)}</td>
-        <td class="num muted">${(t.volatility * 100).toFixed(2)}</td>
-      </tr>`;
-    }
-
     function renderTable() {
       const rows = filtered();
       $("#list-count").textContent = `${rows.length} shown`;
-      tbody.innerHTML = rows.slice(0, limit).map(rowHTML).join("");
+      tbody.innerHTML = rows.slice(0, limit).map((t) => rowHTML(t)).join("");
       $("#more").style.display = rows.length > limit ? "" : "none";
-      for (const tr of tbody.children) sparkline(tr.querySelector(".spark"), state.tickers.get(tr.dataset.sym).spark);
+      drawSparks(tbody);
       $$("th[data-sort]").forEach((th) => th.classList.toggle("sorted", th.dataset.sort === sortKey));
-    }
-
-    function updateTable() {
-      for (const tr of tbody.children) {
-        const t = state.tickers.get(tr.dataset.sym); if (!t) continue;
-        const p = pctOf(t), priceCell = tr.querySelector(".price");
-        const old = parseFloat(priceCell.textContent);
-        priceCell.textContent = t.price.toFixed(2);
-        const pc = tr.querySelector(".pct"); pc.textContent = fmt.pct(p); pc.className = "num pct " + cls(p);
-        tr.querySelector(".mcap").textContent = fmt.big(t.price * t.shares);
-        if (t.price !== old) { tr.classList.remove("flash-up", "flash-down"); void tr.offsetWidth; tr.classList.add(t.price > old ? "flash-up" : "flash-down"); }
-        sparkline(tr.querySelector(".spark"), t.spark);
-      }
-    }
-
-    function renderHeatmap() {
-      const agg = {};
-      for (const t of state.list) {
-        for (const ty of [t.sector, t.subsector]) {
-          if (!ty) continue;
-          agg[ty] ??= { n: 0, sum: 0, best: null };
-          agg[ty].n++; agg[ty].sum += pctOf(t);
-          if (!agg[ty].best || pctOf(t) > pctOf(agg[ty].best)) agg[ty].best = t;
-        }
-      }
-      const hm = $("#heatmap");
-      hm.innerHTML = Object.keys(TYPE_COLORS).filter((k) => agg[k]).map((k) => {
-        const a = agg[k], avg = a.sum / a.n, inten = Math.min(1, Math.abs(avg) / 4);
-        const base = avg >= 0 ? "46,204,113" : "255,92,92";
-        const bg = `linear-gradient(160deg, rgba(${base},${0.14 + inten * 0.5}), rgba(${base},${0.06 + inten * 0.3}))`;
-        return `<div class="tile" data-sector="${k}" style="--tile-bg:${bg};--tc:${TYPE_COLORS[k]}">
-          <div class="t">${k}</div>
-          <div class="p">${fmt.pct(avg)}</div>
-          <div class="n">${a.n} · ★ ${a.best.symbol}</div></div>`;
-      }).join("");
     }
 
     function renderMovers() {
       const sorted = [...state.list].sort((a, b) => pctOf(b) - pctOf(a));
-      const li = (t) => { const p = pctOf(t); return `<li data-sym="${t.symbol}">${img(t.image, "", 34)}<span class="sym">${t.symbol}</span><span class="name">${esc(t.name)}</span><span class="pct ${cls(p)}">${fmt.pct(p)}</span></li>`; };
-      $("#gainers").innerHTML = sorted.slice(0, 6).map(li).join("");
-      $("#losers").innerHTML = sorted.slice(-6).reverse().map(li).join("");
+      const li = (t) => { const p = pctOf(t); return `<li data-sym="${t.symbol}">${img(t.image, "", 44)}<span class="sym">${t.symbol}</span><span class="name">${esc(t.name)}</span><span class="pct ${cls(p)}">${fmt.pct(p)}</span></li>`; };
+      $("#gainers").innerHTML = sorted.slice(0, 8).map(li).join("");
+      $("#losers").innerHTML = sorted.slice(-8).reverse().map(li).join("");
     }
 
-    renderTable(); renderHeatmap(); renderMovers();
+    renderTable(); renderMovers();
 
     $("#search").addEventListener("input", (e) => { q = e.target.value.trim(); limit = 60; renderTable(); });
     sel.addEventListener("change", (e) => { sector = e.target.value; limit = 60; renderTable(); });
@@ -339,13 +349,49 @@
     const ac = new AbortController();
     root.addEventListener("click", (e) => {
       const tr = e.target.closest("tr[data-sym], li[data-sym]");
-      if (tr) { location.hash = "#/t/" + tr.dataset.sym; return; }
-      const tile = e.target.closest(".tile");
-      if (tile) { sel.value = tile.dataset.sector; sector = tile.dataset.sector; limit = 60; renderTable(); window.scrollTo({ top: $("#tbl").offsetTop - 80, behavior: "smooth" }); }
+      if (tr) location.hash = "#/t/" + tr.dataset.sym;
     }, { signal: ac.signal });
 
     return {
-      onTick() { updateTable(); renderHeatmap(); renderMovers(); },
+      onTick() { updateRows(tbody); renderMovers(); },
+      destroy() { ac.abort(); },
+    };
+  };
+
+  views.sectors = (initial) => {
+    const root = $("#view");
+    root.appendChild($("#tpl-sectors").content.cloneNode(true));
+    const hm = $("#heatmap"), detail = $("#sector-detail"), tbody = $("#sector-tbody");
+    let active = initial && TYPE_COLORS[initial] ? initial : null;
+
+    function render() {
+      const agg = sectorAgg();
+      renderHeatmap(hm, agg, active);
+      if (!active || !agg[active]) { detail.hidden = true; return; }
+      const a = agg[active];
+      detail.hidden = false;
+      $("#sector-title").innerHTML = `${badge(active)} <span style="color:var(--text)">${active} sector</span> <small>${a.n} listings (primary + secondary exposure)</small>`;
+      $("#sector-kpis").innerHTML = `
+        <div><span class="lbl">Avg change</span><span class="val ${cls(a.avg)}">${fmt.pct(a.avg)}</span></div>
+        <div><span class="lbl">Sector cap</span><span class="val">${fmt.big(a.cap)}</span></div>
+        <div><span class="lbl">Leader</span><a class="val" href="#/t/${a.best.symbol}">${a.best.symbol} <span class="up">${fmt.pct(pctOf(a.best))}</span></a></div>
+        <div><span class="lbl">Laggard</span><a class="val" href="#/t/${a.worst.symbol}">${a.worst.symbol} <span class="down">${fmt.pct(pctOf(a.worst))}</span></a></div>`;
+      const rows = [...a.members].sort((x, y) => pctOf(y) - pctOf(x));
+      tbody.innerHTML = rows.map((t) => rowHTML(t, false)).join("");
+      drawSparks(tbody);
+    }
+    render();
+
+    const ac = new AbortController();
+    root.addEventListener("click", (e) => {
+      const tile = e.target.closest(".tile");
+      if (tile) { active = tile.dataset.sector; history.replaceState(null, "", "#/sectors/" + active); render(); detail.scrollIntoView({ behavior: "smooth", block: "start" }); return; }
+      const tr = e.target.closest("tr[data-sym]");
+      if (tr) location.hash = "#/t/" + tr.dataset.sym;
+    }, { signal: ac.signal });
+
+    return {
+      onTick() { renderHeatmap(hm, sectorAgg(), active); if (active) updateRows(tbody); },
       destroy() { ac.abort(); },
     };
   };
@@ -520,12 +566,14 @@
   function route() {
     const hash = location.hash || "#/";
     const m = hash.match(/^#\/t\/([A-Za-z0-9]+)/);
-    const name = m ? "ticker" : (hash.replace(/^#\//, "") || "market");
+    const s = hash.match(/^#\/sectors(?:\/([A-Za-z]+))?/);
+    const name = m ? "ticker" : s ? "sectors" : (hash.replace(/^#\//, "") || "market");
     state.view?.destroy?.();
     $("#view").innerHTML = "";
     $$(".nav a").forEach((a) => a.classList.toggle("active", a.dataset.route === name));
     const factory = views[name] || views.market;
-    state.view = factory(m ? m[1].toUpperCase() : undefined);
+    const arg = m ? m[1].toUpperCase() : s && s[1] ? s[1][0].toUpperCase() + s[1].slice(1).toLowerCase() : undefined;
+    state.view = factory(arg);
     state.route = name;
     window.scrollTo(0, 0);
   }

@@ -26,6 +26,7 @@
   </div>
   <nav class="nav">
     <a href="#/" data-route="market">Market</a>
+    <a href="#/sectors" data-route="sectors">Sectors</a>
     <a href="#/portfolio" data-route="portfolio">Portfolio</a>
     <a href="#/news" data-route="news">News</a>
     <a href="#/leaderboard" data-route="leaderboard">Leaderboard</a>
@@ -46,10 +47,6 @@
 
 <template id="tpl-market">
   <section class="grid-market">
-    <aside class="panel sectors">
-      <h2>Type sectors <small>% vs open</small></h2>
-      <div class="heatmap" id="heatmap"></div>
-    </aside>
     <section class="panel movers">
       <h2>Top movers</h2>
       <div class="movers-cols">
@@ -84,6 +81,25 @@
         <tbody id="tbody"></tbody>
       </table>
       <button class="more" id="more">Show more</button>
+    </section>
+  </section>
+</template>
+
+<template id="tpl-sectors">
+  <section class="sectors-page">
+    <section class="panel">
+      <h2>Type sectors <small>average % change vs session open · click a sector to see its listings</small></h2>
+      <div class="heatmap big" id="heatmap"></div>
+    </section>
+    <section class="panel sector-detail" id="sector-detail" hidden>
+      <div class="list-head">
+        <h2 id="sector-title"></h2>
+        <div class="sector-kpis" id="sector-kpis"></div>
+      </div>
+      <table class="tbl" id="sector-tbl">
+        <thead><tr><th>#</th><th>Ticker</th><th>Name</th><th>Sector</th><th class="num">Price</th><th class="num">Chg%</th><th class="num">Trend</th><th class="num">Mkt cap</th></tr></thead>
+        <tbody id="sector-tbody"></tbody>
+      </table>
     </section>
   </section>
 </template>
