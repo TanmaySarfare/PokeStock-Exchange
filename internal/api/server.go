@@ -51,6 +51,7 @@ func (s *Server) routes() {
 	s.mux.HandleFunc("POST /api/me", s.handleRename)
 	s.mux.HandleFunc("POST /api/trade", s.handleTrade)
 	s.mux.HandleFunc("GET /api/leaderboard", s.handleLeaderboard)
+	s.mux.HandleFunc("GET /api/trainer/{id}", s.handleTrainer)
 	files := http.FileServer(http.FS(s.web))
 	s.mux.Handle("GET /", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if strings.HasPrefix(r.URL.Path, "/img/") || strings.HasSuffix(r.URL.Path, ".ico") {
@@ -155,7 +156,17 @@ func (s *Server) handleTrade(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) handleLeaderboard(w http.ResponseWriter, r *http.Request) {
-	writeJSON(w, 200, s.engine.Leaderboard(25))
+	writeJSON(w, 200, s.engine.Leaderboard(40))
+}
+
+func (s *Server) handleTrainer(w http.ResponseWriter, r *http.Request) {
+	id := r.PathValue("id")
+	t := s.engine.Trainer(id)
+	if t == nil {
+		writeJSON(w, 404, map[string]string{"error": "unknown trainer"})
+		return
+	}
+	writeJSON(w, 200, t)
 }
 
 // handleStream pushes every tick as a server-sent event.

@@ -69,14 +69,18 @@ type PortfolioView struct {
 // LeaderRow is one leaderboard entry.
 type LeaderRow struct {
 	ID       string  `json:"id"`
+	Slug     string  `json:"slug"`
 	Name     string  `json:"name"`
 	NetWorth float64 `json:"net_worth"`
 	PnLPct   float64 `json:"pnl_pct"`
-	Holdings int     `json:"holdings"`
 	Top      string  `json:"top"`
+	TopName  string  `json:"top_name,omitempty"`
+	TopImage string  `json:"top_image,omitempty"`
 	Bot      bool    `json:"bot"`
 	Tagline  string  `json:"tagline,omitempty"`
 	Role     string  `json:"role,omitempty"`
+	Image    string  `json:"image,omitempty"`
+	Region   string  `json:"region,omitempty"`
 }
 
 var (
@@ -268,14 +272,17 @@ func (e *Engine) Leaderboard(limit int) []LeaderRow {
 	rows := make([]LeaderRow, 0, len(e.players))
 	for _, p := range e.players {
 		_, net := e.netWorthLocked(p)
-		row := LeaderRow{ID: p.ID[:min(8, len(p.ID))], Name: p.Name, NetWorth: net, PnLPct: round2((net/startingCash - 1) * 100),
-			Holdings: len(p.Holdings), Bot: p.Bot, Tagline: p.Tagline, Role: p.Role}
+		row := LeaderRow{ID: p.ID[:min(8, len(p.ID))], Slug: trainerSlug(p.ID), Name: p.Name, NetWorth: net,
+			PnLPct: round2((net/startingCash - 1) * 100), Bot: p.Bot, Tagline: p.Tagline, Role: p.Role}
+		if d := e.dossierFor(p.ID); d.ok() {
+			row.Image, row.Region = d.Image, d.Region
+		}
 		best := math.Inf(-1)
 		for sym, pos := range p.Holdings {
 			if t, ok := e.tickers[sym]; ok {
 				if v := t.Price * float64(pos.Qty); v > best {
 					best = v
-					row.Top = sym
+					row.Top, row.TopName, row.TopImage = sym, t.Name, t.Image
 				}
 			}
 		}

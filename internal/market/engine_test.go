@@ -193,7 +193,7 @@ func TestBotsTradeAndStaySolvent(t *testing.T) {
 	}
 	roles := map[string]int{}
 	for _, row := range lb {
-		if !row.Bot || row.Tagline == "" {
+		if !row.Bot || row.Tagline == "" || row.Image == "" {
 			t.Errorf("leaderboard row missing bot metadata: %+v", row)
 		}
 		roles[row.Role]++

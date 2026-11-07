@@ -557,17 +557,30 @@
   const ROLE_CLASS = { "Gym Leader": "gym", "Elite Four": "e4", "Champion": "champ" };
 
   views.leaderboard = () => {
-    $("#view").appendChild($("#tpl-leaderboard").content.cloneNode(true));
+    const root = $("#view");
+    root.appendChild($("#tpl-leaderboard").content.cloneNode(true));
     const load = () => api("/api/leaderboard").then((rows) => {
       const meId = state.portfolio && state.portfolio.id ? state.portfolio.id.slice(0, 8) : null;
-      $("#lb tbody").innerHTML = rows.map((r, i) => {
+      $("#lb").innerHTML = rows.map((r, i) => {
         const me = !r.bot && r.id === meId;
         const roleTag = r.role ? `<span class="tag ${ROLE_CLASS[r.role] || "gym"}">${esc(r.role)}</span>` : "";
-        const who = r.bot
-          ? `<span class="lb-name">${esc(r.name)}</span>${roleTag}<span class="lb-tag">${esc(r.tagline || "")}</span>`
-          : `<span class="lb-name">${esc(r.name)}</span>${me ? `<span class="tag you">You</span>` : ""}${r.tagline ? `<span class="lb-tag">${esc(r.tagline)}</span>` : ""}`;
+        const you = me ? `<span class="tag you">You</span>` : "";
         const rankIco = i === 0 ? ico("master") : i === 1 ? ico("ultra") : i === 2 ? ico("great") : "";
-        return `<tr class="${me ? "is-me" : ""}"><td class="muted rank">${rankIco}<span>${i + 1}</span></td><td class="lb-who">${who}</td><td class="num">${fmt.money(r.net_worth)}</td><td class="num ${cls(r.pnl_pct)}">${fmt.pct(r.pnl_pct)}</td><td class="num">${r.holdings}</td><td>${r.top ? `<a href="#/t/${r.top}" class="sym">${r.top}</a>` : "—"}</td></tr>`;
+        const portrait = r.image
+          ? `<img class="lb-art" src="${esc(r.image)}" alt="" width="52" height="52" decoding="async">`
+          : `<span class="lb-art placeholder">${ico("ball")}</span>`;
+        const href = r.bot ? `#/trainer/${esc(r.slug)}` : "#/portfolio";
+        const book = r.top
+          ? `<a class="lb-book" href="#/t/${r.top}">${r.top_image ? img(r.top_image, "", 28) : ""}${r.top}</a>`
+          : `<span class="muted">—</span>`;
+        return `<div class="lb-row ${me ? "is-me" : ""}" data-href="${href}">
+          <span class="muted rank">${rankIco}<span>${i + 1}</span></span>
+          <a href="${href}">${portrait}</a>
+          <a class="lb-who" href="${href}"><span class="lb-name">${esc(r.name)} ${roleTag}${you}</span><span class="lb-tag">${esc(r.tagline || r.region || "")}</span></a>
+          <span class="num">${fmt.money(r.net_worth)}</span>
+          <span class="num ${cls(r.pnl_pct)}">${fmt.pct(r.pnl_pct)}</span>
+          ${book}
+        </div>`;
       }).join("");
     }).catch(() => {});
     load();
@@ -575,17 +588,62 @@
     return { onTick() { if (++n % 3 === 0) load(); } };
   };
 
+  views.trainer = (slug) => {
+    const root = $("#view");
+    root.appendChild($("#tpl-trainer").content.cloneNode(true));
+    let alive = true;
+    const draw = (t) => {
+      $("#tr-art").src = t.image || "/img/logo.svg";
+      $("#tr-name").textContent = t.name;
+      $("#tr-badges").innerHTML = (t.role ? `<span class="tag ${ROLE_CLASS[t.role] || "gym"}">${esc(t.role)}</span>` : "") +
+        (t.region ? `<span class="tag gym">${esc(t.region)}</span>` : "");
+      $("#tr-tag").textContent = t.tagline || "";
+      $("#tr-meta").textContent = [t.hometown, t.debut].filter(Boolean).join(" · ");
+      $("#tr-net").textContent = fmt.money(t.net_worth);
+      const pnl = $("#tr-pnl"); pnl.textContent = fmt.pct(t.pnl_pct); pnl.className = "chg " + cls(t.pnl_pct);
+      $("#tr-rank").textContent = `Rank #${t.rank} of ${t.players} · cash ${fmt.money(t.cash)}`;
+      $("#tr-bio").textContent = t.bio || "A trainer on the exchange.";
+      const kv = [
+        t.hometown && ["Hometown", t.hometown],
+        t.region && ["Region", t.region],
+        t.specialty && ["Specialty", t.specialty],
+        t.partner && ["Partner", t.partner],
+        t.debut && ["Debut", t.debut],
+        t.top && ["Largest book", t.top_name ? `${t.top} · ${t.top_name}` : t.top],
+      ].filter(Boolean);
+      $("#tr-kv").innerHTML = kv.map(([k, v]) => `<div><dt>${k}</dt><dd>${esc(v)}</dd></div>`).join("");
+      $("#tr-trivia").innerHTML = (t.trivia || []).map((x) => `<li>${esc(x)}</li>`).join("") || "<li class='muted'>No Pokédex entry yet.</li>";
+      const hs = t.holdings || [];
+      $("#tr-empty").style.display = hs.length ? "none" : "block";
+      $("#tr-holdings tbody").innerHTML = hs.map((h) => `<tr data-sym="${h.symbol}">
+        <td>${img(h.image, "sprite", 34)}</td><td class="sym">${h.symbol}</td><td>${esc(h.name)} ${badge(h.sector)}</td>
+        <td class="num">${fmt.int(h.qty)}</td><td class="num">${fmt.money(h.price)}</td><td class="num">${fmt.money(h.value)}</td>
+        <td class="num ${cls(h.pnl)}">${fmt.money(h.pnl)}</td></tr>`).join("");
+    };
+    const load = () => api("/api/trainer/" + slug).then((t) => { if (alive) draw(t); }).catch(() => {
+      if (alive) root.innerHTML = `<div class="panel">Unknown trainer. <a href="#/leaderboard">Back</a></div>`;
+    });
+    load();
+    root.addEventListener("click", (e) => {
+      const tr = e.target.closest("tr[data-sym]");
+      if (tr) location.hash = "#/t/" + tr.dataset.sym;
+    });
+    let n = 0;
+    return { onTick() { if (++n % 3 === 0) load(); }, destroy() { alive = false; } };
+  };
+
   // ---------- router ----------
   function route() {
     const hash = location.hash || "#/";
     const m = hash.match(/^#\/t\/([A-Za-z0-9]+)/);
     const s = hash.match(/^#\/sectors(?:\/([A-Za-z]+))?/);
-    const name = m ? "ticker" : s ? "sectors" : (hash.replace(/^#\//, "") || "market");
+    const tr = hash.match(/^#\/trainer\/([A-Za-z0-9:-]+)/);
+    const name = m ? "ticker" : s ? "sectors" : tr ? "trainer" : (hash.replace(/^#\//, "") || "market");
     state.view?.destroy?.();
     $("#view").innerHTML = "";
-    $$(".nav a").forEach((a) => a.classList.toggle("active", a.dataset.route === name));
+    $$(".nav a").forEach((a) => a.classList.toggle("active", a.dataset.route === name || (name === "trainer" && a.dataset.route === "leaderboard")));
     const factory = views[name] || views.market;
-    const arg = m ? m[1].toUpperCase() : s && s[1] ? s[1][0].toUpperCase() + s[1].slice(1).toLowerCase() : undefined;
+    const arg = m ? m[1].toUpperCase() : s && s[1] ? s[1][0].toUpperCase() + s[1].slice(1).toLowerCase() : tr ? tr[1] : undefined;
     state.view = factory(arg);
     state.route = name;
     window.scrollTo(0, 0);

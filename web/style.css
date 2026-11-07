@@ -52,7 +52,7 @@ h2 .ico { width: 28px; height: 28px; }
 .nav .ico, .composite .ico { width: 15px; height: 15px; }
 .movers-cols h3 .ico { width: 18px; height: 18px; }
 .more .ico { width: 16px; height: 16px; }
-.rank { display: flex; align-items: center; gap: 6px; }
+.rank { display: inline-flex; align-items: center; gap: 6px; }
 .rank .ico { width: 18px; height: 18px; }
 /* Panel titles: condensed display caps with a Poké-themed icon. */
 h2 {
@@ -337,10 +337,35 @@ button:active { transform: translateY(1px); }
 .sellbtn { font-size: 11.5px; padding: 4px 10px; }
 
 /* ---------- leaderboard ---------- */
-.lb-who { display: flex; align-items: center; gap: 10px; min-width: 0; }
-.lb-name { font-weight: 600; }
-.lb-tag { color: var(--text-2); font-size: 13px; overflow: hidden; text-overflow: ellipsis; }
-.lb-tag.muted { font-family: var(--mono); font-size: 12px; }
+.lb-head, .lb-row {
+  display: grid; grid-template-columns: 56px 56px minmax(0, 1fr) 140px 100px 130px;
+  gap: 12px; align-items: center;
+}
+.lb-head {
+  color: var(--muted); font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .1em;
+  padding: 0 10px 12px; margin: 0 -10px 6px; border-bottom: 1px solid var(--line-2);
+}
+.lb-head .num, .lb-row .num { text-align: right; }
+.lb-row {
+  padding: 8px 10px; margin: 0 -10px; border-radius: 10px; color: inherit;
+  transition: background .2s;
+}
+.lb-row:hover { background: rgba(255,255,255,.04); }
+.lb-row.is-me { background: rgba(255,176,32,.06); }
+.lb-art {
+  width: 52px; height: 52px; object-fit: cover; object-position: top center; border-radius: 12px;
+  background: radial-gradient(circle at 50% 40%, rgba(255,255,255,.08), rgba(255,255,255,.02) 70%);
+}
+.lb-art.placeholder { display: grid; place-items: center; }
+.lb-who { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.lb-name { font-weight: 600; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.lb-tag { color: var(--text-2); font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.lb-book { display: inline-flex; align-items: center; gap: 8px; font-family: var(--mono); font-weight: 700; }
+.lb-book img { width: 28px; height: 28px; }
+.trainer-art .art { object-fit: contain; object-position: center top; }
+.trainer-bio { margin: 0; line-height: 1.7; color: var(--text-2); }
+.trivia { margin: 0; padding-left: 18px; display: grid; gap: 10px; color: var(--text-2); }
+.trivia li { line-height: 1.45; }
 .tag { font-size: 10px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; padding: 2px 7px; border-radius: 6px; line-height: 1.5; }
 .tag.gym { color: #7fc8ff; background: rgba(127,200,255,.12); border: 1px solid rgba(127,200,255,.3); }
 .tag.e4 { color: #c9a1ff; background: rgba(201,161,255,.12); border: 1px solid rgba(201,161,255,.3); }
@@ -369,6 +394,8 @@ button:active { transform: translateY(1px); }
   .bigs { grid-template-columns: repeat(3, 1fr); }
   .nav a { padding: 6px 10px; }
   .account { display: none; }
+  .lb-head, .lb-row { grid-template-columns: 48px 48px 1fr 120px 90px; }
+  .lb-head span:last-child, .lb-row .lb-book { display: none; }
 }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }

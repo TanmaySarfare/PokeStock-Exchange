@@ -212,7 +212,50 @@
 <template id="tpl-leaderboard">
   <section class="panel leaderboard">
     <h2><svg class="ico"><use href="#i-badge"/></svg> Top trainers</h2>
-    <table class="tbl" id="lb"><thead><tr><th>#</th><th>Trainer</th><th class="num">Net worth</th><th class="num">P&amp;L%</th><th class="num">Positions</th><th>Largest</th></tr></thead><tbody></tbody></table>  </section>
+    <div class="lb-head">
+      <span>#</span><span></span><span>Trainer</span>
+      <span class="num">Net worth</span><span class="num">P&amp;L%</span><span>Largest book</span>
+    </div>
+    <div id="lb" class="lb-rows"></div>
+  </section>
+</template>
+
+<template id="tpl-trainer">
+  <section class="ticker-page trainer-page">
+    <header class="ticker-head panel">
+      <div class="art-wrap trainer-art"><img class="art" id="tr-art" width="126" height="126" decoding="async" alt=""></div>
+      <div class="ident">
+        <div class="sym-row"><span class="sym" id="tr-name"></span><span class="badges" id="tr-badges"></span></div>
+        <div class="muted" id="tr-tag"></div>
+        <div class="muted small" id="tr-meta"></div>
+      </div>
+      <div class="quote">
+        <div class="price" id="tr-net"></div>
+        <div class="chg" id="tr-pnl"></div>
+        <div class="muted small" id="tr-rank"></div>
+      </div>
+    </header>
+    <section class="panel family">
+      <h2><svg class="ico"><use href="#i-dex"/></svg> Bio</h2>
+      <p id="tr-bio" class="trainer-bio"></p>
+    </section>
+    <aside class="panel fundamentals">
+      <h2><svg class="ico"><use href="#i-badge"/></svg> Trainer card</h2>
+      <dl class="kv" id="tr-kv"></dl>
+    </aside>
+    <section class="panel prospectus">
+      <h2><svg class="ico"><use href="#i-berry"/></svg> Trivia</h2>
+      <ul class="trivia" id="tr-trivia"></ul>
+    </section>
+    <section class="panel" style="grid-column:1/-1">
+      <h2><svg class="ico"><use href="#i-great"/></svg> Live book</h2>
+      <table class="tbl" id="tr-holdings">
+        <thead><tr><th></th><th>Ticker</th><th>Name</th><th class="num">Qty</th><th class="num">Price</th><th class="num">Value</th><th class="num">P&amp;L</th></tr></thead>
+        <tbody></tbody>
+      </table>
+      <p class="muted empty" id="tr-empty">No positions right now.</p>
+    </section>
+  </section>
 </template>
 
 <script src="/app.js"></script>
