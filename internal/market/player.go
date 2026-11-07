@@ -35,6 +35,9 @@ type Player struct {
 	Created   int64                `json:"created"`
 	Realized  float64              `json:"realized"`
 	NetWorthH []float64            `json:"-"`
+	Bot       bool                 `json:"bot"`
+	Tagline   string               `json:"tagline,omitempty"`
+	Role      string               `json:"role,omitempty"`
 }
 
 // HoldingView is a position with live valuation.
@@ -71,6 +74,9 @@ type LeaderRow struct {
 	PnLPct   float64 `json:"pnl_pct"`
 	Holdings int     `json:"holdings"`
 	Top      string  `json:"top"`
+	Bot      bool    `json:"bot"`
+	Tagline  string  `json:"tagline,omitempty"`
+	Role     string  `json:"role,omitempty"`
 }
 
 var (
@@ -130,8 +136,16 @@ func (e *Engine) Trade(id, symbol, side string, qty int64) (*Trade, error) {
 	if !ok {
 		return nil, ErrUnknownSymbol
 	}
-	p := e.playerLocked(id)
+	return e.tradeLocked(e.playerLocked(id), t, side, qty, time.Now().Unix())
+}
+
+// tradeLocked fills a market order for p in t. Caller must hold e.mu.
+func (e *Engine) tradeLocked(p *Player, t *Ticker, side string, qty int64, now int64) (*Trade, error) {
+	if qty <= 0 {
+		return nil, ErrBadQty
+	}
 	half := spreadFor(t) / 2
+	symbol := t.Symbol
 	switch side {
 	case "buy":
 		px := round2(t.Price * (1 + half))
@@ -148,8 +162,8 @@ func (e *Engine) Trade(id, symbol, side string, qty int64) (*Trade, error) {
 		pos.AvgCost = (pos.AvgCost*float64(pos.Qty) + total) / float64(pos.Qty+qty)
 		pos.Qty += qty
 		t.Volume += qty
-		tr := Trade{Time: time.Now().Unix(), Symbol: symbol, Side: side, Qty: qty, Price: px, Total: total}
-		p.Trades = append(p.Trades, tr)
+		tr := Trade{Time: now, Symbol: symbol, Side: side, Qty: qty, Price: px, Total: total}
+		p.Trades = appendTrade(p.Trades, tr)
 		return &tr, nil
 	case "sell":
 		pos := p.Holdings[symbol]
@@ -165,11 +179,20 @@ func (e *Engine) Trade(id, symbol, side string, qty int64) (*Trade, error) {
 			delete(p.Holdings, symbol)
 		}
 		t.Volume += qty
-		tr := Trade{Time: time.Now().Unix(), Symbol: symbol, Side: side, Qty: qty, Price: px, Total: total}
-		p.Trades = append(p.Trades, tr)
+		tr := Trade{Time: now, Symbol: symbol, Side: side, Qty: qty, Price: px, Total: total}
+		p.Trades = appendTrade(p.Trades, tr)
 		return &tr, nil
 	}
 	return nil, ErrBadSide
+}
+
+// appendTrade keeps the blotter bounded so long-running bots don't grow forever.
+func appendTrade(ts []Trade, tr Trade) []Trade {
+	ts = append(ts, tr)
+	if len(ts) > 400 {
+		ts = ts[len(ts)-300:]
+	}
+	return ts
 }
 
 func (e *Engine) netWorthLocked(p *Player) (equity, net float64) {
@@ -233,7 +256,8 @@ func (e *Engine) Leaderboard(limit int) []LeaderRow {
 	rows := make([]LeaderRow, 0, len(e.players))
 	for _, p := range e.players {
 		_, net := e.netWorthLocked(p)
-		row := LeaderRow{ID: p.ID[:min(8, len(p.ID))], Name: p.Name, NetWorth: net, PnLPct: round2((net/startingCash - 1) * 100), Holdings: len(p.Holdings)}
+		row := LeaderRow{ID: p.ID[:min(8, len(p.ID))], Name: p.Name, NetWorth: net, PnLPct: round2((net/startingCash - 1) * 100),
+			Holdings: len(p.Holdings), Bot: p.Bot, Tagline: p.Tagline, Role: p.Role}
 		best := math.Inf(-1)
 		for sym, pos := range p.Holdings {
 			if t, ok := e.tickers[sym]; ok {

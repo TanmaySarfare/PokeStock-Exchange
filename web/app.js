@@ -330,7 +330,7 @@
 
     function renderMovers() {
       const sorted = [...state.list].sort((a, b) => pctOf(b) - pctOf(a));
-      const li = (t) => { const p = pctOf(t); return `<li data-sym="${t.symbol}">${img(t.image, "", 44)}<span class="sym">${t.symbol}</span><span class="name">${esc(t.name)}</span><span class="pct ${cls(p)}">${fmt.pct(p)}</span></li>`; };
+      const li = (t) => { const p = pctOf(t); return `<li data-sym="${t.symbol}">${img(t.image, "", 44)}<span class="sym">${t.symbol}</span><span class="name">${esc(t.name)}</span><span class="price">${t.price.toFixed(2)}</span><span class="pct ${cls(p)}">${fmt.pct(p)}</span></li>`; };
       $("#gainers").innerHTML = sorted.slice(0, 8).map(li).join("");
       $("#losers").innerHTML = sorted.slice(-8).reverse().map(li).join("");
     }
@@ -552,10 +552,20 @@
     return { onTick() { if (state.portfolio) render(state.portfolio); }, destroy() { ac.abort(); } };
   };
 
+  const ROLE_CLASS = { "Gym Leader": "gym", "Elite Four": "e4", "Champion": "champ" };
+
   views.leaderboard = () => {
     $("#view").appendChild($("#tpl-leaderboard").content.cloneNode(true));
     const load = () => api("/api/leaderboard").then((rows) => {
-      $("#lb tbody").innerHTML = rows.map((r, i) => `<tr><td class="muted">${i + 1}</td><td>${esc(r.name)} <span class="muted small">${r.id}</span></td><td class="num">${fmt.money(r.net_worth)}</td><td class="num ${cls(r.pnl_pct)}">${fmt.pct(r.pnl_pct)}</td><td class="num">${r.holdings}</td><td>${r.top ? `<a href="#/t/${r.top}" class="sym">${r.top}</a>` : "—"}</td></tr>`).join("");
+      const meId = state.portfolio && state.portfolio.id ? state.portfolio.id.slice(0, 8) : null;
+      $("#lb tbody").innerHTML = rows.map((r, i) => {
+        const me = !r.bot && r.id === meId;
+        const roleTag = r.role ? `<span class="tag ${ROLE_CLASS[r.role] || "gym"}">${esc(r.role)}</span>` : "";
+        const who = r.bot
+          ? `<span class="lb-name">${esc(r.name)}</span>${roleTag}<span class="lb-tag">${esc(r.tagline || "")}</span>`
+          : `<span class="lb-name">${esc(r.name)}</span>${me ? `<span class="tag you">You</span>` : ""}<span class="lb-tag muted">${r.id}</span>`;
+        return `<tr class="${me ? "is-me" : ""}"><td class="muted">${i + 1}</td><td class="lb-who">${who}</td><td class="num">${fmt.money(r.net_worth)}</td><td class="num ${cls(r.pnl_pct)}">${fmt.pct(r.pnl_pct)}</td><td class="num">${r.holdings}</td><td>${r.top ? `<a href="#/t/${r.top}" class="sym">${r.top}</a>` : "—"}</td></tr>`;
+      }).join("");
     }).catch(() => {});
     load();
     let n = 0;

@@ -125,12 +125,23 @@ img { -webkit-user-drag: none; }
 .movers-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; }
 .movers-cols h3 { font-size: 12px; text-transform: uppercase; letter-spacing: .1em; margin-bottom: 10px; font-weight: 700; }
 .movers-cols ul { list-style: none; margin: 0; padding: 0; }
-.movers-cols li { display: flex; align-items: center; gap: 14px; padding: 8px 10px; margin: 0 -10px; border-radius: 10px; cursor: pointer; transition: background .2s; }
+/* Header and rows share one grid template so every column lines up exactly. */
+.movers-cols .mv-head, .movers-cols li {
+  display: grid; grid-template-columns: 44px 72px minmax(0, 1fr) 92px 92px; column-gap: 14px; align-items: center;
+  padding: 8px 10px; margin: 0 -10px;
+}
+.movers-cols .mv-head {
+  padding-top: 0; padding-bottom: 10px; border-bottom: 1px solid var(--line-2); margin-bottom: 4px;
+  color: var(--muted); font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .1em;
+}
+.movers-cols .mv-head .num { text-align: right; }
+.movers-cols li { border-radius: 10px; cursor: pointer; transition: background .2s; }
 .movers-cols li:hover { background: rgba(255,255,255,.04); }
 .movers-cols img { width: 44px; height: 44px; }
-.movers-cols .sym { font-weight: 700; width: 68px; font-family: var(--mono); font-size: 15px; }
-.movers-cols .name { color: var(--text-2); flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 15px; }
-.movers-cols .pct { font-weight: 700; padding: 4px 10px; border-radius: 8px; font-size: 14px; }
+.movers-cols .sym { font-weight: 700; font-family: var(--mono); font-size: 15px; }
+.movers-cols .name { color: var(--text-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 15px; }
+.movers-cols .price { font-family: var(--mono); font-weight: 600; font-size: 15px; text-align: right; font-variant-numeric: tabular-nums; }
+.movers-cols .pct { font-weight: 700; padding: 4px 10px; border-radius: 8px; font-size: 14px; justify-self: end; font-variant-numeric: tabular-nums; }
 .movers-cols .pct.up { background: var(--up-soft); }
 .movers-cols .pct.down { background: var(--down-soft); }
 
@@ -160,6 +171,11 @@ button:active { transform: translateY(1px); }
 .tbl th[data-sort] { cursor: pointer; transition: color .2s; }
 .tbl th[data-sort]:hover, .tbl th.sorted { color: var(--text); }
 .tbl th.sorted::after { content: " ↓"; color: var(--accent); }
+/* On right-aligned columns the arrow goes in front so the label stays flush with the values. */
+.tbl th.num.sorted::after { content: none; }
+.tbl th.num.sorted::before { content: "↓ "; color: var(--accent); }
+.tbl th.num { font-family: var(--sans); }
+.tbl td .spark { display: block; margin-left: auto; }
 .tbl td { padding: 9px 12px; border-bottom: 1px solid var(--line); white-space: nowrap; transition: background .25s; font-size: 15px; }
 .tbl tbody tr { cursor: pointer; }
 .tbl tbody tr:hover td { background: rgba(255,255,255,.035); }
@@ -266,6 +282,19 @@ button:active { transform: translateY(1px); }
 #nw-chart { width: 100%; height: 110px; display: block; }
 .empty { display: none; }
 .sellbtn { font-size: 11.5px; padding: 4px 10px; }
+
+/* ---------- leaderboard ---------- */
+.lb-who { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.lb-name { font-weight: 600; }
+.lb-tag { color: var(--text-2); font-size: 13px; overflow: hidden; text-overflow: ellipsis; }
+.lb-tag.muted { font-family: var(--mono); font-size: 12px; }
+.tag { font-size: 10px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; padding: 2px 7px; border-radius: 6px; line-height: 1.5; }
+.tag.gym { color: #7fc8ff; background: rgba(127,200,255,.12); border: 1px solid rgba(127,200,255,.3); }
+.tag.e4 { color: #c9a1ff; background: rgba(201,161,255,.12); border: 1px solid rgba(201,161,255,.3); }
+.tag.champ { color: var(--accent); background: rgba(255,176,32,.12); border: 1px solid rgba(255,176,32,.35); }
+.tag.you { color: var(--accent); background: rgba(255,176,32,.14); border: 1px solid rgba(255,176,32,.35); }
+.tbl tr.is-me td { background: rgba(255,176,32,.06); }
+.tbl tr.is-me td:first-child { box-shadow: inset 3px 0 0 var(--accent); }
 
 .toast {
   position: fixed; right: 22px; bottom: 22px; background: rgba(21,27,36,.92); backdrop-filter: blur(10px);

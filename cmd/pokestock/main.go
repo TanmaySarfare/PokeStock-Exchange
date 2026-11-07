@@ -32,6 +32,7 @@ func main() {
 	}
 	eng := market.NewEngine(listings, chart, *seed)
 	eng.TickInterval = *tick
+	eng.AddBots() // the anime cast trades alongside you
 	eng.Warm(*warm)
 
 	var web fs.FS

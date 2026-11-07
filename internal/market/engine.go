@@ -75,6 +75,7 @@ type Engine struct {
 	news     []Event
 	newsSeq  int
 	players  map[string]*Player
+	bots     []*bot
 	subs     map[chan Update]struct{}
 
 	TickInterval time.Duration
@@ -218,6 +219,9 @@ func (e *Engine) stepAt(now int64) {
 		}
 		prices[t.Symbol] = t.Price
 	}
+
+	// Bots trade on the freshly printed prices.
+	e.runBotsLocked(now)
 
 	// Track every trainer's net worth over time for their portfolio chart.
 	for _, p := range e.players {

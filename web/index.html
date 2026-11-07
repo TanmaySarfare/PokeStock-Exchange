@@ -50,8 +50,16 @@
     <section class="panel movers">
       <h2>Top movers</h2>
       <div class="movers-cols">
-        <div><h3 class="up">Gainers</h3><ul id="gainers"></ul></div>
-        <div><h3 class="down">Losers</h3><ul id="losers"></ul></div>
+        <div>
+          <h3 class="up">Gainers</h3>
+          <div class="mv-head"><span></span><span>Ticker</span><span>Name</span><span class="num">Price</span><span class="num">Chg%</span></div>
+          <ul id="gainers"></ul>
+        </div>
+        <div>
+          <h3 class="down">Losers</h3>
+          <div class="mv-head"><span></span><span>Ticker</span><span>Name</span><span class="num">Price</span><span class="num">Chg%</span></div>
+          <ul id="losers"></ul>
+        </div>
       </div>
     </section>
     <section class="panel ticker-list">
@@ -193,7 +201,7 @@
   <section class="panel leaderboard">
     <h2>Top trainers</h2>
     <table class="tbl" id="lb"><thead><tr><th>#</th><th>Trainer</th><th class="num">Net worth</th><th class="num">P&amp;L%</th><th class="num">Positions</th><th>Largest</th></tr></thead><tbody></tbody></table>
-    <p class="muted">Everyone starts with $10,000. Accounts live in server memory and reset on restart.</p>
+    <p class="muted">Everyone starts with $10,000 — including the anime cast, who trade on their own every tick. Accounts live in server memory and reset on restart.</p>
   </section>
 </template>
 

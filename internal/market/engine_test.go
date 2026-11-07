@@ -159,3 +159,48 @@ func TestTrading(t *testing.T) {
 		t.Errorf("bad leaderboard: %+v", lb)
 	}
 }
+
+func TestBotsTradeAndStaySolvent(t *testing.T) {
+	listings, chart := testData(t)
+	e := NewEngine(listings, chart, 7)
+	e.AddBots()
+	for i := 0; i < 300; i++ {
+		e.Step()
+	}
+	lb := e.Leaderboard(100)
+	if len(lb) != len(cast) {
+		t.Fatalf("want %d bots on the leaderboard, got %d", len(cast), len(lb))
+	}
+	traded := 0
+	for _, p := range e.players {
+		if !p.Bot {
+			t.Errorf("non-bot player %s present", p.ID)
+		}
+		if p.Cash < -0.01 {
+			t.Errorf("%s went negative: %.2f", p.Name, p.Cash)
+		}
+		if len(p.Trades) > 0 {
+			traded++
+		}
+		for _, pos := range p.Holdings {
+			if pos.Qty <= 0 {
+				t.Errorf("%s holds %d of %s", p.Name, pos.Qty, pos.Symbol)
+			}
+		}
+	}
+	if traded < len(cast)-2 {
+		t.Errorf("only %d of %d bots traded", traded, len(cast))
+	}
+	roles := map[string]int{}
+	for _, row := range lb {
+		if !row.Bot || row.Tagline == "" {
+			t.Errorf("leaderboard row missing bot metadata: %+v", row)
+		}
+		roles[row.Role]++
+	}
+	for _, want := range []string{"Gym Leader", "Elite Four", "Champion"} {
+		if roles[want] == 0 {
+			t.Errorf("no %s on the leaderboard", want)
+		}
+	}
+}
