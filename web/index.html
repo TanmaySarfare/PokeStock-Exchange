@@ -64,7 +64,7 @@
     </section>
     <section class="panel ticker-list">
       <div class="list-head">
-        <h2>All listings <small id="list-count"></small></h2>
+        <h2>All listings <small class="count" id="list-count"></small></h2>
         <div class="controls">
           <input id="search" type="search" placeholder="Search name / ticker / type…" autocomplete="off">
           <select id="sector-filter"><option value="">All sectors</option></select>
@@ -82,9 +82,9 @@
           <th>Sector</th>
           <th data-sort="price" class="num">Price</th>
           <th data-sort="pct" class="num">Chg%</th>
-          <th class="num">Trend</th>
+          <th class="trend">Trend</th>
           <th data-sort="mcap" class="num">Mkt cap</th>
-          <th data-sort="volatility" class="num">β</th>
+          <th data-sort="volatility" class="num">Beta</th>
         </tr></thead>
         <tbody id="tbody"></tbody>
       </table>
@@ -105,7 +105,7 @@
         <div class="sector-kpis" id="sector-kpis"></div>
       </div>
       <table class="tbl" id="sector-tbl">
-        <thead><tr><th>#</th><th>Ticker</th><th>Name</th><th>Sector</th><th class="num">Price</th><th class="num">Chg%</th><th class="num">Trend</th><th class="num">Mkt cap</th></tr></thead>
+        <thead><tr><th>#</th><th>Ticker</th><th>Name</th><th>Sector</th><th class="num">Price</th><th class="num">Chg%</th><th class="trend">Trend</th><th class="num">Mkt cap</th></tr></thead>
         <tbody id="sector-tbody"></tbody>
       </table>
     </section>
@@ -163,6 +163,7 @@
     <div class="panel summary">
       <div class="who">
         <input id="name-input" maxlength="24" placeholder="Trainer name">
+        <input id="tag-input" class="tag-input" maxlength="40" placeholder="Motto shown on the leaderboard (optional)">
         <button id="name-save">Save</button>
       </div>
       <div class="bigs">

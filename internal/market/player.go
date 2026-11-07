@@ -125,6 +125,18 @@ func (e *Engine) Rename(id, name string) {
 	}
 }
 
+// SetTagline sets the short motto shown next to the name on the leaderboard.
+// An empty string clears it.
+func (e *Engine) SetTagline(id, tag string) {
+	e.mu.Lock()
+	defer e.mu.Unlock()
+	p := e.playerLocked(id)
+	if n := []rune(tag); len(n) > 40 {
+		tag = string(n[:40])
+	}
+	p.Tagline = tag
+}
+
 // Trade executes a market order. Buys fill at ask, sells at bid.
 func (e *Engine) Trade(id, symbol, side string, qty int64) (*Trade, error) {
 	if qty <= 0 {

@@ -115,13 +115,19 @@ func (s *Server) handlePortfolio(w http.ResponseWriter, r *http.Request) {
 func (s *Server) handleRename(w http.ResponseWriter, r *http.Request) {
 	id := s.playerID(w, r)
 	var body struct {
-		Name string `json:"name"`
+		Name    *string `json:"name"`
+		Tagline *string `json:"tagline"`
 	}
 	if err := json.NewDecoder(http.MaxBytesReader(w, r.Body, 4096)).Decode(&body); err != nil {
 		writeErr(w, 400, fmt.Errorf("bad json: %w", err))
 		return
 	}
-	s.engine.Rename(id, strings.TrimSpace(body.Name))
+	if body.Name != nil {
+		s.engine.Rename(id, strings.TrimSpace(*body.Name))
+	}
+	if body.Tagline != nil {
+		s.engine.SetTagline(id, strings.TrimSpace(*body.Tagline))
+	}
 	writeJSON(w, 200, s.engine.Portfolio(id))
 }
 

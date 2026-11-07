@@ -250,7 +250,7 @@
       <td>${badge(t.sector)}${t.subsector ? badge(t.subsector) : ""}</td>
       <td class="num price">${t.price.toFixed(2)}</td>
       <td class="num pct ${cls(p)}">${fmt.pct(p)}</td>
-      <td class="num"><canvas class="spark"></canvas></td>
+      <td class="trend"><canvas class="spark"></canvas></td>
       <td class="num mcap">${fmt.big(t.price * t.shares)}</td>
       ${withBeta ? `<td class="num muted">${(t.volatility * 100).toFixed(2)}</td>` : ""}
     </tr>`;
@@ -512,6 +512,7 @@
       const pf = await api("/api/me");
       state.portfolio = pf;
       $("#name-input").value = pf.name;
+      $("#tag-input").value = pf.tagline || "";
       render(pf);
     }
     function render(pf) {
@@ -535,7 +536,7 @@
       $("#trades tbody").innerHTML = (pf.trades || []).map((t) => `<tr data-sym="${t.symbol}"><td class="muted">${fmt.time(t.time)}</td><td class="${t.side === "buy" ? "up" : "down"}">${t.side.toUpperCase()}</td><td class="sym">${t.symbol}</td><td class="num">${fmt.int(t.qty)}</td><td class="num">${fmt.money(t.price)}</td><td class="num">${fmt.money(t.total)}</td></tr>`).join("");
     }
     $("#name-save").addEventListener("click", async () => {
-      try { state.portfolio = await post("/api/me", { name: $("#name-input").value }); render(state.portfolio); renderHeader(); toast("Name saved", "ok"); } catch (e) { toast(e.message, "err"); }
+      try { state.portfolio = await post("/api/me", { name: $("#name-input").value, tagline: $("#tag-input").value }); render(state.portfolio); renderHeader(); toast("Profile saved", "ok"); } catch (e) { toast(e.message, "err"); }
     });
     const ac = new AbortController();
     $("#view").addEventListener("click", async (e) => {
@@ -563,7 +564,7 @@
         const roleTag = r.role ? `<span class="tag ${ROLE_CLASS[r.role] || "gym"}">${esc(r.role)}</span>` : "";
         const who = r.bot
           ? `<span class="lb-name">${esc(r.name)}</span>${roleTag}<span class="lb-tag">${esc(r.tagline || "")}</span>`
-          : `<span class="lb-name">${esc(r.name)}</span>${me ? `<span class="tag you">You</span>` : ""}<span class="lb-tag muted">${r.id}</span>`;
+          : `<span class="lb-name">${esc(r.name)}</span>${me ? `<span class="tag you">You</span>` : ""}${r.tagline ? `<span class="lb-tag">${esc(r.tagline)}</span>` : ""}`;
         return `<tr class="${me ? "is-me" : ""}"><td class="muted">${i + 1}</td><td class="lb-who">${who}</td><td class="num">${fmt.money(r.net_worth)}</td><td class="num ${cls(r.pnl_pct)}">${fmt.pct(r.pnl_pct)}</td><td class="num">${r.holdings}</td><td>${r.top ? `<a href="#/t/${r.top}" class="sym">${r.top}</a>` : "—"}</td></tr>`;
       }).join("");
     }).catch(() => {});
