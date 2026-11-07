@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PokéStock Exchange</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='46' fill='%23ef4444'/><path d='M4 50a46 46 0 0 0 92 0z' fill='%23f8fafc'/><rect x='4' y='45' width='92' height='10' fill='%230b0f14'/><circle cx='50' cy='50' r='13' fill='%230b0f14'/><circle cx='50' cy='50' r='8' fill='%23f8fafc'/></svg>">
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a class="brand" href="#/">
+    <span class="pokeball"></span>
+    <span class="brand-text">Poké<b>Stock</b> Exchange</span>
+  </a>
+  <div class="composite" id="composite">
+    <span class="lbl">PKDX 1025</span>
+    <span class="val" id="composite-val">—</span>
+    <span class="chg" id="composite-chg">—</span>
+  </div>
+  <nav class="nav">
+    <a href="#/" data-route="market">Market</a>
+    <a href="#/portfolio" data-route="portfolio">Portfolio</a>
+    <a href="#/news" data-route="news">News</a>
+    <a href="#/leaderboard" data-route="leaderboard">Leaderboard</a>
+  </nav>
+  <div class="account" id="account">
+    <span class="lbl" id="acct-name">—</span>
+    <span class="val" id="acct-net">—</span>
+    <span class="chg" id="acct-pnl">—</span>
+  </div>
+  <div class="clock"><span id="clock">--:--:--</span><span class="live" id="live-dot" title="Live feed">●</span></div>
+</header>
+
+<div class="tape" id="tape"><div class="tape-track" id="tape-track"></div></div>
+
+<main id="view" class="view"></main>
+
+<div id="toast" class="toast"></div>
+
+<template id="tpl-market">
+  <section class="grid-market">
+    <aside class="panel sectors">
+      <h2>Type sectors <small>% vs open</small></h2>
+      <div class="heatmap" id="heatmap"></div>
+    </aside>
+    <section class="panel movers">
+      <h2>Top movers</h2>
+      <div class="movers-cols">
+        <div><h3 class="up">Gainers</h3><ul id="gainers"></ul></div>
+        <div><h3 class="down">Losers</h3><ul id="losers"></ul></div>
+      </div>
+    </section>
+    <section class="panel ticker-list">
+      <div class="list-head">
+        <h2>All listings <small id="list-count"></small></h2>
+        <div class="controls">
+          <input id="search" type="search" placeholder="Search name / ticker / type…" autocomplete="off">
+          <select id="sector-filter"><option value="">All sectors</option></select>
+          <select id="rarity-filter">
+            <option value="">All rarities</option>
+            <option>Legendary</option><option>Mythical</option><option>None</option>
+          </select>
+        </div>
+      </div>
+      <table class="tbl" id="tbl">
+        <thead><tr>
+          <th data-sort="dex">#</th>
+          <th data-sort="symbol">Ticker</th>
+          <th data-sort="name">Name</th>
+          <th>Sector</th>
+          <th data-sort="price" class="num">Price</th>
+          <th data-sort="pct" class="num">Chg%</th>
+          <th class="num">Trend</th>
+          <th data-sort="mcap" class="num">Mkt cap</th>
+          <th data-sort="volatility" class="num">β</th>
+        </tr></thead>
+        <tbody id="tbody"></tbody>
+      </table>
+      <button class="more" id="more">Show more</button>
+    </section>
+  </section>
+</template>
+
+<template id="tpl-ticker">
+  <section class="ticker-page">
+    <header class="ticker-head panel">
+      <img class="art" id="t-art" alt="">
+      <div class="ident">
+        <div class="sym-row"><span class="sym" id="t-sym"></span><span class="badges" id="t-badges"></span></div>
+        <h1 id="t-name"></h1>
+        <div class="muted" id="t-cat"></div>
+      </div>
+      <div class="quote">
+        <div class="price" id="t-price"></div>
+        <div class="chg" id="t-chg"></div>
+        <div class="muted small" id="t-range"></div>
+      </div>
+      <form class="trade" id="trade-form">
+        <label>Qty <input type="number" id="trade-qty" min="1" value="10"></label>
+        <button type="button" class="buy" id="btn-buy">Buy</button>
+        <button type="button" class="sell" id="btn-sell">Sell</button>
+        <div class="muted small" id="trade-info"></div>
+      </form>
+    </header>
+    <section class="panel chart-panel">
+      <h2>Price <small id="chart-sub"></small></h2>
+      <canvas id="chart" height="320"></canvas>
+    </section>
+    <aside class="panel fundamentals">
+      <h2>Fundamentals</h2>
+      <div class="stat-bars" id="stat-bars"></div>
+      <dl class="kv" id="kv"></dl>
+    </aside>
+    <section class="panel prospectus">
+      <h2>Prospectus</h2>
+      <p id="t-prospectus"></p>
+      <div class="risk" id="t-risk"></div>
+    </section>
+    <section class="panel family">
+      <h2>Corporate family</h2>
+      <div class="family-row" id="t-family"></div>
+    </section>
+    <section class="panel t-news">
+      <h2>Ticker news</h2>
+      <ul class="news-list" id="t-news"></ul>
+    </section>
+  </section>
+</template>
+
+<template id="tpl-portfolio">
+  <section class="portfolio">
+    <div class="panel summary">
+      <div class="who">
+        <input id="name-input" maxlength="24" placeholder="Trainer name">
+        <button id="name-save">Save</button>
+      </div>
+      <div class="bigs">
+        <div><span class="lbl">Net worth</span><span class="val" id="p-net"></span></div>
+        <div><span class="lbl">Cash</span><span class="val" id="p-cash"></span></div>
+        <div><span class="lbl">Equity</span><span class="val" id="p-equity"></span></div>
+        <div><span class="lbl">P&amp;L</span><span class="val" id="p-pnl"></span></div>
+        <div><span class="lbl">Realized</span><span class="val" id="p-real"></span></div>
+        <div><span class="lbl">Rank</span><span class="val" id="p-rank"></span></div>
+      </div>
+      <canvas id="nw-chart" height="90"></canvas>
+    </div>
+    <div class="panel">
+      <h2>Holdings</h2>
+      <table class="tbl" id="holdings">
+        <thead><tr><th></th><th>Ticker</th><th>Name</th><th class="num">Qty</th><th class="num">Avg cost</th><th class="num">Price</th><th class="num">Value</th><th class="num">P&amp;L</th><th></th></tr></thead>
+        <tbody></tbody>
+      </table>
+      <p class="muted empty" id="holdings-empty">No positions yet. Head to the <a href="#/">market</a> and buy something that's Not Very Effective to hold.</p>
+    </div>
+    <div class="panel">
+      <h2>Recent trades</h2>
+      <table class="tbl" id="trades"><thead><tr><th>Time</th><th>Side</th><th>Ticker</th><th class="num">Qty</th><th class="num">Price</th><th class="num">Total</th></tr></thead><tbody></tbody></table>
+    </div>
+  </section>
+</template>
+
+<template id="tpl-news">
+  <section class="panel newsfeed">
+    <h2>Market wire</h2>
+    <ul class="news-list big" id="news-list"></ul>
+  </section>
+</template>
+
+<template id="tpl-leaderboard">
+  <section class="panel leaderboard">
+    <h2>Top trainers</h2>
+    <table class="tbl" id="lb"><thead><tr><th>#</th><th>Trainer</th><th class="num">Net worth</th><th class="num">P&amp;L%</th><th class="num">Positions</th><th>Largest</th></tr></thead><tbody></tbody></table>
+    <p class="muted">Everyone starts with $10,000. Accounts live in server memory and reset on restart.</p>
+  </section>
+</template>
+
+<script src="/app.js"></script>
+</body>
+</html>
