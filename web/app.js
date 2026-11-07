@@ -40,7 +40,8 @@
   const cls = (v) => (v > 0 ? "up" : v < 0 ? "down" : "");
   const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
   const pctOf = (t) => (t.open ? (t.price / t.open - 1) * 100 : 0);
-  const badge = (type) => `<span class="badge" style="background:${TYPE_COLORS[type] || "#555"}">${esc(type)}</span>`;
+  const badge = (type) => `<span class="badge" style="--bc:${TYPE_COLORS[type] || "#555"}">${esc(type)}</span>`;
+  const img = (src, cls, size) => `<img class="${cls}" src="${esc(src)}" width="${size}" height="${size}" loading="lazy" decoding="async" alt="">`;
   const el = (html) => { const t = document.createElement("template"); t.innerHTML = html.trim(); return t.content.firstElementChild; };
 
   async function api(path, opts) {
@@ -61,97 +62,143 @@
   }
 
   // ---------- canvas helpers ----------
-  function sparkline(canvas, data, color) {
-    const dpr = window.devicePixelRatio || 1;
-    const w = canvas.clientWidth || 90, h = canvas.clientHeight || 22;
-    if (canvas.width !== w * dpr) { canvas.width = w * dpr; canvas.height = h * dpr; }
+  const C = { up: "#2ecc71", down: "#ff5c5c", accent: "#ffb020", grid: "rgba(255,255,255,.06)", muted: "#7d8a9b" };
+  const MONO = '11px "JetBrains Mono", ui-monospace, Menlo, monospace';
+
+  // Prepare a canvas for crisp HiDPI drawing. Returns {ctx,w,h}.
+  function prep(canvas, fallbackH) {
+    const dpr = Math.max(1, Math.min(3, window.devicePixelRatio || 1));
+    const w = canvas.clientWidth || canvas.width, h = canvas.clientHeight || fallbackH;
+    const W = Math.round(w * dpr), H = Math.round(h * dpr);
+    if (canvas.width !== W || canvas.height !== H) { canvas.width = W; canvas.height = H; }
     const ctx = canvas.getContext("2d");
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.clearRect(0, 0, w, h);
+    ctx.lineJoin = "round"; ctx.lineCap = "round";
+    ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = "high";
+    return { ctx, w, h };
+  }
+
+  // Catmull-Rom → bezier smoothing for line series.
+  function smoothPath(ctx, pts, tension = 0.5) {
+    if (pts.length < 2) return;
+    ctx.moveTo(pts[0][0], pts[0][1]);
+    for (let i = 0; i < pts.length - 1; i++) {
+      const p0 = pts[i - 1] || pts[i], p1 = pts[i], p2 = pts[i + 1], p3 = pts[i + 2] || p2;
+      const c1x = p1[0] + ((p2[0] - p0[0]) / 6) * tension, c1y = p1[1] + ((p2[1] - p0[1]) / 6) * tension;
+      const c2x = p2[0] - ((p3[0] - p1[0]) / 6) * tension, c2y = p2[1] - ((p3[1] - p1[1]) / 6) * tension;
+      ctx.bezierCurveTo(c1x, c1y, c2x, c2y, p2[0], p2[1]);
+    }
+  }
+
+  function hexA(hex, a) {
+    const n = parseInt(hex.slice(1), 16);
+    return `rgba(${(n >> 16) & 255},${(n >> 8) & 255},${n & 255},${a})`;
+  }
+
+  function sparkline(canvas, data, color) {
+    const { ctx, w, h } = prep(canvas, 28);
     if (!data || data.length < 2) return;
     let min = Math.min(...data), max = Math.max(...data);
     if (max === min) { max += 1; min -= 1; }
-    ctx.beginPath();
-    data.forEach((v, i) => {
-      const x = (i / (data.length - 1)) * (w - 2) + 1;
-      const y = h - 2 - ((v - min) / (max - min)) * (h - 4);
-      i ? ctx.lineTo(x, y) : ctx.moveTo(x, y);
-    });
-    ctx.strokeStyle = color || (data[data.length - 1] >= data[0] ? "#22c55e" : "#ef4444");
-    ctx.lineWidth = 1.5;
-    ctx.stroke();
+    const pad = 2.5;
+    const pts = data.map((v, i) => [pad + (i / (data.length - 1)) * (w - pad * 2), h - pad - ((v - min) / (max - min)) * (h - pad * 2)]);
+    const col = color || (data[data.length - 1] >= data[0] ? C.up : C.down);
+    // area fill
+    ctx.beginPath(); smoothPath(ctx, pts); ctx.lineTo(pts[pts.length - 1][0], h); ctx.lineTo(pts[0][0], h); ctx.closePath();
+    const g = ctx.createLinearGradient(0, 0, 0, h); g.addColorStop(0, hexA(col, 0.28)); g.addColorStop(1, hexA(col, 0));
+    ctx.fillStyle = g; ctx.fill();
+    // line
+    ctx.beginPath(); smoothPath(ctx, pts);
+    ctx.strokeStyle = col; ctx.lineWidth = 1.6; ctx.stroke();
+    // end dot
+    const [ex, ey] = pts[pts.length - 1];
+    ctx.beginPath(); ctx.arc(ex, ey, 2, 0, Math.PI * 2); ctx.fillStyle = col; ctx.fill();
   }
 
   function candleChart(canvas, candles, current, open) {
-    const dpr = window.devicePixelRatio || 1;
-    const w = canvas.clientWidth, h = canvas.clientHeight || 320;
-    canvas.width = w * dpr; canvas.height = h * dpr;
-    const ctx = canvas.getContext("2d");
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    ctx.clearRect(0, 0, w, h);
+    const { ctx, w, h } = prep(canvas, 340);
     const all = current ? [...candles, current] : candles;
     if (!all.length) return;
-    const padL = 8, padR = 64, padT = 10, padB = 36;
+    const padL = 10, padR = 72, padT = 14, padB = 44, volH = 34;
     const cw = w - padL - padR, ch = h - padT - padB;
     let lo = Math.min(...all.map((c) => c.l), open), hi = Math.max(...all.map((c) => c.h), open);
-    const span = hi - lo || 1; lo -= span * 0.05; hi += span * 0.05;
+    const span = hi - lo || 1; lo -= span * 0.06; hi += span * 0.06;
     const y = (p) => padT + ch - ((p - lo) / (hi - lo)) * ch;
-    const n = all.length, step = cw / n, bw = Math.max(2, Math.min(14, step * 0.65));
+    const n = all.length, step = cw / n, bw = Math.max(3, Math.min(16, step * 0.62));
     const maxV = Math.max(...all.map((c) => c.v), 1);
+    const px = (v) => Math.round(v) + 0.5; // crisp 1px lines
 
     // grid + axis labels
-    ctx.font = "11px ui-monospace, Menlo, monospace";
-    ctx.textAlign = "left"; ctx.textBaseline = "middle";
+    ctx.font = MONO; ctx.textAlign = "left"; ctx.textBaseline = "middle";
     for (let i = 0; i <= 5; i++) {
-      const p = lo + ((hi - lo) * i) / 5, yy = y(p);
-      ctx.strokeStyle = "#1a2330"; ctx.beginPath(); ctx.moveTo(padL, yy); ctx.lineTo(w - padR, yy); ctx.stroke();
-      ctx.fillStyle = "#7f8ea3"; ctx.fillText("$" + p.toFixed(2), w - padR + 6, yy);
+      const p = lo + ((hi - lo) * i) / 5, yy = px(y(p));
+      ctx.strokeStyle = C.grid; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(padL, yy); ctx.lineTo(w - padR, yy); ctx.stroke();
+      ctx.fillStyle = C.muted; ctx.fillText("$" + p.toFixed(2), w - padR + 10, yy);
     }
     // session open line
-    ctx.setLineDash([4, 4]); ctx.strokeStyle = "#f59e0b88"; ctx.beginPath(); ctx.moveTo(padL, y(open)); ctx.lineTo(w - padR, y(open)); ctx.stroke(); ctx.setLineDash([]);
-    ctx.fillStyle = "#f59e0b"; ctx.fillText("open", w - padR + 6, y(open) - 12);
+    ctx.setLineDash([5, 5]); ctx.strokeStyle = hexA(C.accent, 0.6); ctx.beginPath(); ctx.moveTo(padL, px(y(open))); ctx.lineTo(w - padR, px(y(open))); ctx.stroke(); ctx.setLineDash([]);
+    ctx.fillStyle = C.accent; ctx.font = '600 10px "JetBrains Mono", ui-monospace, Menlo, monospace'; ctx.textBaseline = "bottom";
+    ctx.fillText("OPEN " + open.toFixed(2), padL + 4, y(open) - 3); ctx.font = MONO; ctx.textBaseline = "middle";
 
-    // volume
+    // volume bars
     all.forEach((c, i) => {
-      const x = padL + i * step + step / 2;
-      const vh = (c.v / maxV) * 26;
-      ctx.fillStyle = c.c >= c.o ? "#22c55e33" : "#ef444433";
-      ctx.fillRect(x - bw / 2, h - padB + 2 + (26 - vh), bw, vh);
+      const x = padL + i * step + step / 2, vh = Math.max(1, (c.v / maxV) * volH);
+      ctx.fillStyle = hexA(c.c >= c.o ? C.up : C.down, 0.22);
+      roundRect(ctx, x - bw / 2, h - padB + 4 + (volH - vh), bw, vh, 2); ctx.fill();
     });
     // candles
     all.forEach((c, i) => {
-      const x = padL + i * step + step / 2;
-      const up = c.c >= c.o;
-      const col = i === n - 1 && current ? (up ? "#86efac" : "#fca5a5") : up ? "#22c55e" : "#ef4444";
-      ctx.strokeStyle = col; ctx.fillStyle = col; ctx.lineWidth = 1;
+      const x = px(padL + i * step + step / 2) - 0.5;
+      const up = c.c >= c.o, live = i === n - 1 && current;
+      const col = up ? C.up : C.down;
+      ctx.strokeStyle = col; ctx.lineWidth = 1.2;
       ctx.beginPath(); ctx.moveTo(x, y(c.h)); ctx.lineTo(x, y(c.l)); ctx.stroke();
       const top = y(Math.max(c.o, c.c)), bot = y(Math.min(c.o, c.c));
-      ctx.fillRect(x - bw / 2, top, bw, Math.max(1, bot - top));
+      const g = ctx.createLinearGradient(0, top, 0, bot); g.addColorStop(0, col); g.addColorStop(1, hexA(col, 0.72));
+      ctx.fillStyle = live ? hexA(col, 0.55) : g;
+      roundRect(ctx, x - bw / 2, top, bw, Math.max(1.5, bot - top), 2); ctx.fill();
+      if (live) { ctx.strokeStyle = col; ctx.lineWidth = 1; ctx.stroke(); }
     });
+    // last price tag
+    const last = all[n - 1].c, ly = y(last), col = last >= open ? C.up : C.down;
+    ctx.fillStyle = col; roundRect(ctx, w - padR + 4, ly - 10, padR - 8, 20, 5); ctx.fill();
+    ctx.fillStyle = "#0a0d12"; ctx.font = '600 ' + MONO; ctx.fillText("$" + last.toFixed(2), w - padR + 10, ly);
     // time labels
-    ctx.fillStyle = "#7f8ea3"; ctx.textAlign = "center"; ctx.textBaseline = "top";
-    const every = Math.max(1, Math.floor(n / 8));
-    all.forEach((c, i) => { if (i % every === 0) ctx.fillText(fmt.time(c.t), padL + i * step + step / 2, h - 10); });
+    ctx.font = MONO; ctx.fillStyle = C.muted; ctx.textAlign = "center"; ctx.textBaseline = "top";
+    const every = Math.max(1, Math.ceil(n / 8));
+    all.forEach((c, i) => { if (i % every === 0) ctx.fillText(fmt.time(c.t), padL + i * step + step / 2, h - 14); });
+  }
+
+  function roundRect(ctx, x, y, w, h, r) {
+    r = Math.min(r, w / 2, h / 2);
+    ctx.beginPath();
+    ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r);
+    ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath();
   }
 
   function lineChart(canvas, data, baseline) {
-    const dpr = window.devicePixelRatio || 1;
-    const w = canvas.clientWidth, h = canvas.clientHeight || 90;
-    canvas.width = w * dpr; canvas.height = h * dpr;
-    const ctx = canvas.getContext("2d");
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    ctx.clearRect(0, 0, w, h);
+    const { ctx, w, h } = prep(canvas, 110);
     if (!data || data.length < 2) {
-      ctx.fillStyle = "#7f8ea3"; ctx.font = "11px ui-monospace, monospace"; ctx.fillText("Net-worth history builds as you trade and check back.", 8, h / 2);
+      ctx.fillStyle = C.muted; ctx.font = MONO; ctx.textBaseline = "middle";
+      ctx.fillText("Net-worth history builds as the market ticks.", 10, h / 2);
       return;
     }
     let min = Math.min(...data, baseline), max = Math.max(...data, baseline);
     if (max === min) { max += 1; min -= 1; }
-    const y = (v) => h - 6 - ((v - min) / (max - min)) * (h - 12);
-    ctx.setLineDash([3, 3]); ctx.strokeStyle = "#f59e0b88"; ctx.beginPath(); ctx.moveTo(0, y(baseline)); ctx.lineTo(w, y(baseline)); ctx.stroke(); ctx.setLineDash([]);
-    ctx.beginPath();
-    data.forEach((v, i) => { const x = (i / (data.length - 1)) * (w - 4) + 2; i ? ctx.lineTo(x, y(v)) : ctx.moveTo(x, y(v)); });
-    ctx.strokeStyle = data[data.length - 1] >= baseline ? "#22c55e" : "#ef4444"; ctx.lineWidth = 2; ctx.stroke();
+    const pad = 8;
+    const y = (v) => h - pad - ((v - min) / (max - min)) * (h - pad * 2);
+    const pts = data.map((v, i) => [pad + (i / (data.length - 1)) * (w - pad * 2), y(v)]);
+    const col = data[data.length - 1] >= baseline ? C.up : C.down;
+    ctx.setLineDash([4, 5]); ctx.strokeStyle = hexA(C.accent, 0.6); ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(pad, Math.round(y(baseline)) + 0.5); ctx.lineTo(w - pad, Math.round(y(baseline)) + 0.5); ctx.stroke(); ctx.setLineDash([]);
+    ctx.beginPath(); smoothPath(ctx, pts, 0.6); ctx.lineTo(pts[pts.length - 1][0], h); ctx.lineTo(pts[0][0], h); ctx.closePath();
+    const g = ctx.createLinearGradient(0, 0, 0, h); g.addColorStop(0, hexA(col, 0.3)); g.addColorStop(1, hexA(col, 0));
+    ctx.fillStyle = g; ctx.fill();
+    ctx.beginPath(); smoothPath(ctx, pts, 0.6); ctx.strokeStyle = col; ctx.lineWidth = 2; ctx.stroke();
+    const [ex, ey] = pts[pts.length - 1];
+    ctx.beginPath(); ctx.arc(ex, ey, 3.5, 0, Math.PI * 2); ctx.fillStyle = col; ctx.fill();
+    ctx.beginPath(); ctx.arc(ex, ey, 7, 0, Math.PI * 2); ctx.fillStyle = hexA(col, 0.25); ctx.fill();
   }
 
   // ---------- header / tape ----------
@@ -217,7 +264,7 @@
       return `<tr data-sym="${t.symbol}">
         <td class="muted">${t.dex}</td>
         <td class="sym">${t.symbol}</td>
-        <td><img class="sprite" loading="lazy" src="${esc(t.image)}" alt="">${esc(t.name)}${t.rarity !== "None" ? ` <span class="badge rarity">${t.rarity[0]}</span>` : ""}</td>
+        <td>${img(t.image, "sprite", 34)}${esc(t.name)}${t.rarity !== "None" ? ` <span class="badge rarity">${t.rarity[0]}</span>` : ""}</td>
         <td>${badge(t.sector)}${t.subsector ? badge(t.subsector) : ""}</td>
         <td class="num price">${t.price.toFixed(2)}</td>
         <td class="num pct ${cls(p)}">${fmt.pct(p)}</td>
@@ -262,8 +309,9 @@
       const hm = $("#heatmap");
       hm.innerHTML = Object.keys(TYPE_COLORS).filter((k) => agg[k]).map((k) => {
         const a = agg[k], avg = a.sum / a.n, inten = Math.min(1, Math.abs(avg) / 4);
-        const bg = avg >= 0 ? `rgba(34,197,94,${0.12 + inten * 0.55})` : `rgba(239,68,68,${0.12 + inten * 0.55})`;
-        return `<div class="tile" data-sector="${k}" style="background:${bg};--tc:${TYPE_COLORS[k]}">
+        const base = avg >= 0 ? "46,204,113" : "255,92,92";
+        const bg = `linear-gradient(160deg, rgba(${base},${0.14 + inten * 0.5}), rgba(${base},${0.06 + inten * 0.3}))`;
+        return `<div class="tile" data-sector="${k}" style="--tile-bg:${bg};--tc:${TYPE_COLORS[k]}">
           <div class="t">${k}</div>
           <div class="p">${fmt.pct(avg)}</div>
           <div class="n">${a.n} · ★ ${a.best.symbol}</div></div>`;
@@ -272,7 +320,7 @@
 
     function renderMovers() {
       const sorted = [...state.list].sort((a, b) => pctOf(b) - pctOf(a));
-      const li = (t) => { const p = pctOf(t); return `<li data-sym="${t.symbol}"><img src="${esc(t.image)}" loading="lazy" alt=""><span class="sym">${t.symbol}</span><span class="name">${esc(t.name)}</span><span class="pct ${cls(p)}">${fmt.pct(p)}</span></li>`; };
+      const li = (t) => { const p = pctOf(t); return `<li data-sym="${t.symbol}">${img(t.image, "", 34)}<span class="sym">${t.symbol}</span><span class="name">${esc(t.name)}</span><span class="pct ${cls(p)}">${fmt.pct(p)}</span></li>`; };
       $("#gainers").innerHTML = sorted.slice(0, 6).map(li).join("");
       $("#losers").innerHTML = sorted.slice(-6).reverse().map(li).join("");
     }
@@ -330,6 +378,7 @@
     function renderStatic() {
       const L = detail.listing;
       $("#t-art").src = L.image;
+      $(".ticker-head").style.setProperty("--hero", TYPE_COLORS[L.sector] || "#fff");
       $("#t-sym").textContent = sym;
       $("#t-badges").innerHTML = badge(L.sector) + (L.subsector ? badge(L.subsector) : "") +
         (L.rarity !== "None" ? `<span class="badge rarity">${L.rarity}</span>` : "") + (L.group !== "None" ? `<span class="badge group">${L.group}</span>` : "");
@@ -354,7 +403,7 @@
         ["Evolves via", L.evolution_method ? esc(L.evolution_method) : "—"], ["Volume", `<span id="kv-volume">${fmt.int(detail.volume)}</span>`],
       ].map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join("");
       $("#t-family").innerHTML = detail.family.sort((a, b) => (a.stage - b.stage) || (a.dex - b.dex)).map((f, i) =>
-        (i ? `<span class="arrow">→</span>` : "") + `<a class="fam ${f.symbol === sym ? "me" : ""}" href="#/t/${f.symbol}"><img src="${esc(f.image)}" alt=""><div><div class="sym">${f.symbol}</div><div class="muted small">${esc(f.name)} <span class="fp"></span></div></div></a>`
+        (i ? `<span class="arrow">→</span>` : "") + `<a class="fam ${f.symbol === sym ? "me" : ""}" href="#/t/${f.symbol}">${img(f.image, "", 44)}<div><div class="sym">${f.symbol}</div><div class="muted small">${esc(f.name)} <span class="fp"></span></div></div></a>`
       ).join("");
     }
 
@@ -392,6 +441,8 @@
 
   function renderNews(ul, items, compact) {
     const seen = new Set($$("li", ul).map((li) => li.dataset.id));
+    items = items || [];
+    if (!items.length) { ul.innerHTML = `<li class="muted" style="display:block">No headlines yet. This one's flying under the radar.</li>`; return; }
     ul.innerHTML = items.map((n) => `<li data-id="${n.id}" class="${seen.size && !seen.has(String(n.id)) ? "fresh" : ""}">
       <time>${fmt.time(n.time)}</time>
       <div><div class="head"><span class="kind">${n.kind}</span>${esc(n.headline)}</div>
@@ -430,7 +481,7 @@
       lineChart($("#nw-chart"), pf.net_worth_history, START_CASH);
       const tb = $("#holdings tbody");
       tb.innerHTML = (pf.holdings || []).map((h) => `<tr data-sym="${h.symbol}">
-        <td><img class="sprite" src="${esc(h.image)}" alt=""></td><td class="sym">${h.symbol}</td><td>${esc(h.name)} ${badge(h.sector)}</td>
+        <td>${img(h.image, "sprite", 34)}</td><td class="sym">${h.symbol}</td><td>${esc(h.name)} ${badge(h.sector)}</td>
         <td class="num">${fmt.int(h.qty)}</td><td class="num">${fmt.money(h.avg_cost)}</td><td class="num">${fmt.money(h.price)}</td><td class="num">${fmt.money(h.value)}</td>
         <td class="num ${cls(h.pnl)}">${fmt.money(h.pnl)} (${fmt.pct(h.avg_cost ? (h.price / h.avg_cost - 1) * 100 : 0)})</td>
         <td><button class="sellbtn" data-sell="${h.symbol}" data-qty="${h.qty}">Sell all</button></td></tr>`).join("");

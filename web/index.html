@@ -4,14 +4,20 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PokéStock Exchange</title>
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='46' fill='%23ef4444'/><path d='M4 50a46 46 0 0 0 92 0z' fill='%23f8fafc'/><rect x='4' y='45' width='92' height='10' fill='%230b0f14'/><circle cx='50' cy='50' r='13' fill='%230b0f14'/><circle cx='50' cy='50' r='8' fill='%23f8fafc'/></svg>">
+<meta name="theme-color" content="#0a0d12">
+<link rel="icon" type="image/svg+xml" href="/img/logo.svg">
+<link rel="alternate icon" href="/img/favicon.ico">
+<link rel="apple-touch-icon" href="/img/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap">
 <link rel="stylesheet" href="/style.css">
 </head>
 <body>
 <header class="topbar">
   <a class="brand" href="#/">
-    <span class="pokeball"></span>
-    <span class="brand-text">Poké<b>Stock</b> Exchange</span>
+    <img class="logo" src="/img/logo.svg" width="38" height="38" alt="PokéStock">
+    <span class="brand-text"><span class="brand-name">Poké<b>Stock</b></span><span class="brand-sub">Exchange</span></span>
   </a>
   <div class="composite" id="composite">
     <span class="lbl">PKDX 1025</span>
@@ -29,7 +35,7 @@
     <span class="val" id="acct-net">—</span>
     <span class="chg" id="acct-pnl">—</span>
   </div>
-  <div class="clock"><span id="clock">--:--:--</span><span class="live" id="live-dot" title="Live feed">●</span></div>
+  <div class="clock"><span class="live" id="live-dot" title="Live feed"></span><span id="clock">--:--:--</span></div>
 </header>
 
 <div class="tape" id="tape"><div class="tape-track" id="tape-track"></div></div>
@@ -85,7 +91,7 @@
 <template id="tpl-ticker">
   <section class="ticker-page">
     <header class="ticker-head panel">
-      <img class="art" id="t-art" alt="">
+      <div class="art-wrap"><img class="art" id="t-art" width="126" height="126" decoding="async" alt=""></div>
       <div class="ident">
         <div class="sym-row"><span class="sym" id="t-sym"></span><span class="badges" id="t-badges"></span></div>
         <h1 id="t-name"></h1>

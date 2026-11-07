@@ -51,7 +51,16 @@ func (s *Server) routes() {
 	s.mux.HandleFunc("POST /api/me", s.handleRename)
 	s.mux.HandleFunc("POST /api/trade", s.handleTrade)
 	s.mux.HandleFunc("GET /api/leaderboard", s.handleLeaderboard)
-	s.mux.Handle("GET /", http.FileServer(http.FS(s.web)))
+	files := http.FileServer(http.FS(s.web))
+	s.mux.Handle("GET /", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if strings.HasPrefix(r.URL.Path, "/img/") || strings.HasSuffix(r.URL.Path, ".ico") {
+			w.Header().Set("Cache-Control", "public, max-age=86400")
+		} else {
+			// HTML/CSS/JS change together; keep them fresh so UI updates land on reload.
+			w.Header().Set("Cache-Control", "no-cache")
+		}
+		files.ServeHTTP(w, r)
+	}))
 }
 
 func writeJSON(w http.ResponseWriter, status int, v any) {
