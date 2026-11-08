@@ -555,6 +555,15 @@
   };
 
   const ROLE_CLASS = { "Gym Leader": "gym", "Elite Four": "e4", "Champion": "champ" };
+  // Landscape anime stills. The value is where the face sits, so the circular crop keeps it.
+  const STILL_FOCUS = {
+    "surge.jpg": "32% 32%",
+    "jenny.jpg": "28% 36%",
+    "goh.jpg": "24% 34%",
+    "paul.jpg": "50% 18%",
+    "tracey.jpg": "74% 24%",
+  };
+  const stillFocus = (src) => STILL_FOCUS[(src || "").split("/").pop()] || "";
 
   views.leaderboard = () => {
     const root = $("#view");
@@ -566,8 +575,9 @@
         const roleTag = r.role ? `<span class="tag ${ROLE_CLASS[r.role] || "gym"}">${esc(r.role)}</span>` : "";
         const you = me ? `<span class="tag you">You</span>` : "";
         const rankIco = i === 0 ? ico("master") : i === 1 ? ico("ultra") : i === 2 ? ico("great") : "";
+        const focus = stillFocus(r.image);
         const portrait = r.image
-          ? `<img class="lb-art" src="${esc(r.image)}" alt="" width="52" height="52" decoding="async">`
+          ? `<img class="lb-art${focus ? " still" : ""}" src="${esc(r.image)}" alt="" width="52" height="52" decoding="async"${focus ? ` style="object-position:${focus}"` : ""}>`
           : `<span class="lb-art placeholder">${ico("ball")}</span>`;
         const href = r.bot ? `#/trainer/${esc(r.slug)}` : "#/portfolio";
         const book = r.top
@@ -593,7 +603,11 @@
     root.appendChild($("#tpl-trainer").content.cloneNode(true));
     let alive = true;
     const draw = (t) => {
-      $("#tr-art").src = t.image || "img/logo.svg";
+      const focus = stillFocus(t.image);
+      const art = $("#tr-art");
+      art.src = t.image || "img/logo.svg";
+      art.classList.toggle("still", !!focus);
+      art.style.objectPosition = focus;
       $("#tr-name").textContent = t.name;
       $("#tr-badges").innerHTML = (t.role ? `<span class="tag ${ROLE_CLASS[t.role] || "gym"}">${esc(t.role)}</span>` : "") +
         (t.region ? `<span class="tag gym">${esc(t.region)}</span>` : "");
