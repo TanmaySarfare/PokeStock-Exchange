@@ -593,12 +593,12 @@
     root.appendChild($("#tpl-trainer").content.cloneNode(true));
     let alive = true;
     const draw = (t) => {
-      $("#tr-art").src = t.image || "/img/logo.svg";
+      $("#tr-art").src = t.image || "img/logo.svg";
       $("#tr-name").textContent = t.name;
       $("#tr-badges").innerHTML = (t.role ? `<span class="tag ${ROLE_CLASS[t.role] || "gym"}">${esc(t.role)}</span>` : "") +
         (t.region ? `<span class="tag gym">${esc(t.region)}</span>` : "");
       $("#tr-tag").textContent = t.tagline || "";
-      $("#tr-meta").textContent = [t.hometown, t.debut].filter(Boolean).join(" · ");
+      $("#tr-meta").textContent = t.hometown || "";
       $("#tr-net").textContent = fmt.money(t.net_worth);
       const pnl = $("#tr-pnl"); pnl.textContent = fmt.pct(t.pnl_pct); pnl.className = "chg " + cls(t.pnl_pct);
       $("#tr-rank").textContent = `Rank #${t.rank} of ${t.players} · cash ${fmt.money(t.cash)}`;
@@ -611,7 +611,7 @@
         t.debut && ["Debut", t.debut],
         t.top && ["Largest book", t.top_name ? `${t.top} · ${t.top_name}` : t.top],
       ].filter(Boolean);
-      $("#tr-kv").innerHTML = kv.map(([k, v]) => `<div><dt>${k}</dt><dd>${esc(v)}</dd></div>`).join("");
+      $("#tr-kv").innerHTML = kv.map(([k, v]) => `<dt>${k}</dt><dd>${esc(v)}</dd>`).join("");
       $("#tr-trivia").innerHTML = (t.trivia || []).map((x) => `<li>${esc(x)}</li>`).join("") || "<li class='muted'>No Pokédex entry yet.</li>";
       const hs = t.holdings || [];
       $("#tr-empty").style.display = hs.length ? "none" : "block";

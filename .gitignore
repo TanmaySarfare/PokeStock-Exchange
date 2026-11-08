@@ -1,3 +1,10 @@
 bin/
 *.log
 .DS_Store
+.DS_Store
+.env
+node_modules/
+__pycache__/
+venv/
+.venv/
+site/

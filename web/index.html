@@ -5,13 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PokéStock Exchange</title>
 <meta name="theme-color" content="#0a0d12">
-<link rel="icon" type="image/svg+xml" href="/img/logo.svg">
-<link rel="alternate icon" href="/img/favicon.ico">
-<link rel="apple-touch-icon" href="/img/apple-touch-icon.png">
+<link rel="icon" type="image/svg+xml" href="img/logo.svg">
+<link rel="alternate icon" href="img/favicon.ico">
+<link rel="apple-touch-icon" href="img/apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&family=Big+Shoulders+Display:wght@700;800&display=swap">
-<link rel="stylesheet" href="/style.css">
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
 <svg class="ico-sheet" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
@@ -26,7 +26,7 @@
 </svg>
 <header class="topbar">
   <a class="brand" href="#/">
-    <img class="logo" src="/img/logo.svg" width="38" height="38" alt="PokéStock">
+    <img class="logo" src="img/logo.svg" width="38" height="38" alt="PokéStock">
     <span class="brand-text"><span class="brand-name">Poké<b>Stock</b></span><span class="brand-sub">Exchange</span></span>
   </a>
   <div class="composite" id="composite">
@@ -235,19 +235,19 @@
         <div class="muted small" id="tr-rank"></div>
       </div>
     </header>
-    <section class="panel family">
+    <section class="panel tr-bio">
       <h2><svg class="ico"><use href="#i-dex"/></svg> Bio</h2>
       <p id="tr-bio" class="trainer-bio"></p>
     </section>
-    <aside class="panel fundamentals">
+    <aside class="panel tr-card">
       <h2><svg class="ico"><use href="#i-badge"/></svg> Trainer card</h2>
       <dl class="kv" id="tr-kv"></dl>
     </aside>
-    <section class="panel prospectus">
+    <section class="panel tr-trivia">
       <h2><svg class="ico"><use href="#i-berry"/></svg> Trivia</h2>
       <ul class="trivia" id="tr-trivia"></ul>
     </section>
-    <section class="panel" style="grid-column:1/-1">
+    <section class="panel tr-book">
       <h2><svg class="ico"><use href="#i-great"/></svg> Live book</h2>
       <table class="tbl" id="tr-holdings">
         <thead><tr><th></th><th>Ticker</th><th>Name</th><th class="num">Qty</th><th class="num">Price</th><th class="num">Value</th><th class="num">P&amp;L</th></tr></thead>
@@ -258,6 +258,6 @@
   </section>
 </template>
 
-<script src="/app.js"></script>
+<script src="app.js"></script>
 </body>
 </html>

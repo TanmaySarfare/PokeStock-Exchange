@@ -22,7 +22,7 @@ type dossier struct {
 
 var dossiers = map[string]dossier{
 	"bot:ash": {
-		Image: "/img/trainers/ash.png", Region: "Kanto", Hometown: "Pallet Town",
+		Image: "img/trainers/ash.png", Region: "Kanto", Hometown: "Pallet Town",
 		Debut: "EP001 — Pokémon, I Choose You!", Specialty: "All types", Partner: "Pikachu",
 		Bio: "Ash Ketchum left Pallet Town at age 10 with a stubborn Pikachu and a dream of becoming a Pokémon Master. After eight regional leagues, the Alola Championship, and the World Coronation Series, he is the closest thing the exchange has to a buy-and-hold legend.",
 		Trivia: []string{
@@ -33,7 +33,7 @@ var dossiers = map[string]dossier{
 		},
 	},
 	"bot:misty": {
-		Image: "/img/trainers/misty.png", Region: "Kanto", Hometown: "Cerulean City",
+		Image: "img/trainers/misty.png", Region: "Kanto", Hometown: "Cerulean City",
 		Debut: "EP001 — Pokémon, I Choose You!", Specialty: "Water", Partner: "Starmie / Gyarados",
 		Bio: "Youngest of the Cerulean Gym's four sisters and a Water-type specialist. She traveled with Ash through Kanto, the Orange Islands and Johto, then returned to run the gym — and, on this exchange, the Cerulean Water Fund.",
 		Trivia: []string{
@@ -44,7 +44,7 @@ var dossiers = map[string]dossier{
 		},
 	},
 	"bot:brock": {
-		Image: "/img/trainers/brock.png", Region: "Kanto", Hometown: "Pewter City",
+		Image: "img/trainers/brock.png", Region: "Kanto", Hometown: "Pewter City",
 		Debut: "EP005 — Showdown in Pewter City", Specialty: "Rock / Ground", Partner: "Onix / Steelix",
 		Bio: "Pewter Gym Leader, amateur chef, and the party's unofficial doctor. Brock walked away from the gym to travel as a Pokémon Breeder, then a Pokémon Doctor, and now runs Pewter Rock & Ground Partners.",
 		Trivia: []string{
@@ -55,7 +55,7 @@ var dossiers = map[string]dossier{
 		},
 	},
 	"bot:gary": {
-		Image: "/img/trainers/gary.png", Region: "Kanto", Hometown: "Pallet Town",
+		Image: "img/trainers/gary.png", Region: "Kanto", Hometown: "Pallet Town",
 		Debut: "EP001 — Pokémon, I Choose You!", Specialty: "Research / momentum", Partner: "Blastoise / Umbreon",
 		Bio: "Professor Oak's grandson and Ash's original rival. Gary burned through gym badges, then hung up the league circuit to become a Pokémon researcher — but he still trades like someone who intends to smell you later.",
 		Trivia: []string{
@@ -66,7 +66,7 @@ var dossiers = map[string]dossier{
 		},
 	},
 	"bot:jessie": {
-		Image: "/img/trainers/jessie.png", Region: "Kanto", Hometown: "unknown (Team Rocket)",
+		Image: "img/trainers/jessie.png", Region: "Kanto", Hometown: "unknown (Team Rocket)",
 		Debut: "EP002 — Pokémon Emergency!", Specialty: "Chaos / theft", Partner: "Wobbuffet / Arbok",
 		Bio: "Team Rocket's loud half. Jessie grew up poor, tried Pokémon nursing, contests, and even a brief gym-leader stint in Johto, then settled on blasting off again for Giovanni. Her book is oversized, random, and frequently underwater.",
 		Trivia: []string{
@@ -77,7 +77,7 @@ var dossiers = map[string]dossier{
 		},
 	},
 	"bot:james": {
-		Image: "/img/trainers/james.png", Region: "Kanto", Hometown: "a manor he'd rather forget",
+		Image: "img/trainers/james.png", Region: "Kanto", Hometown: "a manor he'd rather forget",
 		Debut: "EP002 — Pokémon Emergency!", Specialty: "Chaos / collection", Partner: "Carnivine / Weezing",
 		Bio: "The polite one. James ran away from an arranged marriage, joined Team Rocket, and has been stealing other people's Pokémon (and occasionally buying them lunch) ever since.",
 		Trivia: []string{
@@ -88,7 +88,7 @@ var dossiers = map[string]dossier{
 		},
 	},
 	"bot:meowth": {
-		Image: "/img/trainers/meowth.png", Region: "Kanto", Hometown: "Hollywood (failed)",
+		Image: "img/trainers/meowth.png", Region: "Kanto", Hometown: "Hollywood (failed)",
 		Debut: "EP002 — Pokémon Emergency!", Specialty: "Pay Day / talking his way out", Partner: "himself",
 		Bio: "The only Meowth who learned to talk — and to walk upright — in a doomed bid to impress a female Meowth named Meowzie. When that failed he joined Team Rocket, where he is translator, mechanic, and the only one who can read a balance sheet.",
 		Trivia: []string{
@@ -99,7 +99,7 @@ var dossiers = map[string]dossier{
 		},
 	},
 	"bot:oak": {
-		Image: "/img/trainers/oak.png", Region: "Kanto", Hometown: "Pallet Town",
+		Image: "img/trainers/oak.png", Region: "Kanto", Hometown: "Pallet Town",
 		Debut: "EP001 — Pokémon, I Choose You!", Specialty: "Index / research", Partner: "Dragonite (as a young trainer)",
 		Bio: "Professor Samuel Oak, inventor of the Pokédex and Pallet Town's starter-hander. He was a league-caliber trainer in his youth (the Special episode 'The Rivalry Reunion' and Origins cover this) and now runs the Pallet Town Index — a little of everything, rebalanced quarterly.",
 		Trivia: []string{
@@ -110,7 +110,7 @@ var dossiers = map[string]dossier{
 		},
 	},
 	"bot:cynthia": {
-		Image: "/img/trainers/cynthia.png", Region: "Sinnoh", Hometown: "Celestic Town",
+		Image: "img/trainers/cynthia.png", Region: "Sinnoh", Hometown: "Celestic Town",
 		Debut: "DP040 — Top-Down Training!", Specialty: "Legendary / Mythical paper", Partner: "Garchomp",
 		Bio: "Sinnoh Champion, mythologist, and the most dangerous smile on the leaderboard. Cynthia researches the Sinnoh creation myths when she isn't quietly accumulating thin-float Legendary listings.",
 		Trivia: []string{
@@ -121,7 +121,7 @@ var dossiers = map[string]dossier{
 		},
 	},
 	"bot:lance": {
-		Image: "/img/trainers/lance.png", Region: "Kanto / Johto", Hometown: "Blackthorn City",
+		Image: "img/trainers/lance.png", Region: "Kanto / Johto", Hometown: "Blackthorn City",
 		Debut: "EP063 — Battle of the Badge", Specialty: "Dragon / Flying", Partner: "Dragonite",
 		Bio: "Dragon-type Elite Four member (later Champion in some game continuity) who dresses like a caped accountant of destruction. On the exchange he only touches Dragon and Flying paper.",
 		Trivia: []string{
@@ -132,7 +132,7 @@ var dossiers = map[string]dossier{
 		},
 	},
 	"bot:giovanni": {
-		Image: "/img/trainers/giovanni.png", Region: "Kanto", Hometown: "Viridian City",
+		Image: "img/trainers/giovanni.png", Region: "Kanto", Hometown: "Viridian City",
 		Debut: "EP063 — Battle of the Badge", Specialty: "Ground / crime", Partner: "Persian / Mewtwo",
 		Bio: "Viridian Gym Leader in public, Team Rocket boss in private. Giovanni treats the market the way he treats gym challengers: let them think they're winning, then close the ground from under them.",
 		Trivia: []string{
@@ -143,7 +143,7 @@ var dossiers = map[string]dossier{
 		},
 	},
 	"bot:dawn": {
-		Image: "/img/trainers/dawn.png", Region: "Sinnoh", Hometown: "Twinleaf Town",
+		Image: "img/trainers/dawn.png", Region: "Sinnoh", Hometown: "Twinleaf Town",
 		Debut: "DP001 — Following a Maiden Voyage!", Specialty: "Contests / contrarian", Partner: "Piplup",
 		Bio: "Sinnoh Coordinator and Ash's traveling partner through the Sinnoh region. Dawn's Piplup started stubborn and stayed stubborn; her book buys the dip the way she used to buy last-minute contest ribbons.",
 		Trivia: []string{
@@ -154,7 +154,7 @@ var dossiers = map[string]dossier{
 		},
 	},
 	"bot:may": {
-		Image: "/img/trainers/may.png", Region: "Hoenn", Hometown: "Petalburg City",
+		Image: "img/trainers/may.png", Region: "Hoenn", Hometown: "Petalburg City",
 		Debut: "AG001 — Get the Show on the Road!", Specialty: "Fire / Grass contests", Partner: "Blaziken / Beautifly",
 		Bio: "Daughter of Petalburg Gym Leader Norman. May set out wanting a ribbon more than a badge, became one of Hoenn and Kanto's top Coordinators, and now runs a Fire-and-Grass growth fund.",
 		Trivia: []string{
@@ -165,7 +165,7 @@ var dossiers = map[string]dossier{
 		},
 	},
 	"bot:serena": {
-		Image: "/img/trainers/serena.png", Region: "Kalos", Hometown: "Vaniville Town",
+		Image: "img/trainers/serena.png", Region: "Kalos", Hometown: "Vaniville Town",
 		Debut: "XY001 — Kalos, Where Dreams and Adventures Begin!", Specialty: "Fairy / Fire", Partner: "Braixen / Sylveon",
 		Bio: "Kalos Queen runner-up and Ash's childhood friend from Professor Oak's summer camp. Serena trades Fairy and Fire the way she performed — with a lot of presentation and a hidden Steel-type will.",
 		Trivia: []string{
@@ -176,7 +176,7 @@ var dossiers = map[string]dossier{
 		},
 	},
 	"bot:steven": {
-		Image: "/img/trainers/steven.png", Region: "Hoenn", Hometown: "Mossdeep City",
+		Image: "img/trainers/steven.png", Region: "Hoenn", Hometown: "Mossdeep City",
 		Debut: "AG083 — A Shroomish Skirmish (game cameo earlier)", Specialty: "Steel / Rock", Partner: "Metagross",
 		Bio: "Hoenn Champion, Devon Corporation heir, and a man who would rather talk about rare stones than about being Champion. His fund is Steel and Rock with museum-quality concentration.",
 		Trivia: []string{
@@ -187,7 +187,7 @@ var dossiers = map[string]dossier{
 		},
 	},
 	"bot:ltsurge": {
-		Image: "/img/trainers/surge.jpg", Region: "Kanto", Hometown: "Vermilion City",
+		Image: "img/trainers/surge.jpg", Region: "Kanto", Hometown: "Vermilion City",
 		Debut: "EP014 — Electric Shock Showdown", Specialty: "Electric", Partner: "Raichu",
 		Bio: "Vermilion Gym Leader, self-described war veteran, and the man who taught Ash that not every Electric-type problem is solved by a Pikachu. He only buys Electric paper.",
 		Trivia: []string{
@@ -198,7 +198,7 @@ var dossiers = map[string]dossier{
 		},
 	},
 	"bot:sabrina": {
-		Image: "/img/trainers/sabrina.png", Region: "Kanto", Hometown: "Saffron City",
+		Image: "img/trainers/sabrina.png", Region: "Kanto", Hometown: "Saffron City",
 		Debut: "EP022 — Abra and the Psychic Showdown", Specialty: "Psychic / Ghost", Partner: "Alakazam / Kadabra",
 		Bio: "Saffron Gym Leader and a psychic who once sealed her own childhood into a doll. Sabrina trades Psychic and Ghost names as if she already knows next tick's print.",
 		Trivia: []string{
@@ -209,7 +209,7 @@ var dossiers = map[string]dossier{
 		},
 	},
 	"bot:nurse": {
-		Image: "/img/trainers/nurse.png", Region: "Every region", Hometown: "the nearest Pokémon Center",
+		Image: "img/trainers/nurse.png", Region: "Every region", Hometown: "the nearest Pokémon Center",
 		Debut: "EP002 — Pokémon Emergency!", Specialty: "Index / healing", Partner: "Chansey / Blissey / Audino / Comfey",
 		Bio: "There is a Nurse Joy in every town and they are all family. This Joy runs the Pokémon Center Pension: tiny positions in everything, almost never a concentrated bet, because someone has to stay solvent to heal the rest of the tape.",
 		Trivia: []string{
@@ -220,7 +220,7 @@ var dossiers = map[string]dossier{
 		},
 	},
 	"bot:jenny": {
-		Image: "/img/trainers/jenny.jpg", Region: "Every region", Hometown: "the nearest police station",
+		Image: "img/trainers/jenny.jpg", Region: "Every region", Hometown: "the nearest police station",
 		Debut: "EP005 — Showdown in Pewter City", Specialty: "Compliance / index", Partner: "Growlithe / Herdier / Manectric",
 		Bio: "Officer Jenny enforces Pokémon bylaws, traffic, and, on this exchange, position limits. Her book is small, diversified, and aggressively allergic to Team Rocket-shaped chaos.",
 		Trivia: []string{
@@ -231,7 +231,7 @@ var dossiers = map[string]dossier{
 		},
 	},
 	"bot:paul": {
-		Image: "/img/trainers/paul.jpg", Region: "Sinnoh", Hometown: "Veilstone City",
+		Image: "img/trainers/paul.jpg", Region: "Sinnoh", Hometown: "Veilstone City",
 		Debut: "DP002 — Two Degrees of Separation!", Specialty: "Momentum / strength only", Partner: "Electivire / Torterra",
 		Bio: "Ash's Sinnoh rival. Paul releases any Pokémon he considers weak, trains the rest like a drill sergeant, and trades the same way: cut losers fast, size up winners.",
 		Trivia: []string{
@@ -242,7 +242,7 @@ var dossiers = map[string]dossier{
 		},
 	},
 	"bot:iris": {
-		Image: "/img/trainers/iris.png", Region: "Unova", Hometown: "Village of Dragons",
+		Image: "img/trainers/iris.png", Region: "Unova", Hometown: "Village of Dragons",
 		Debut: "BW001 — In the Shadow of Zekrom!", Specialty: "Dragon", Partner: "Haxorus / Dragonite",
 		Bio: "Dragon Master in training (and, in later Unova continuity, Unova Champion). Iris called Ash a kid for two seasons, then quietly became one of the strongest Dragon trainers on the tape.",
 		Trivia: []string{
@@ -253,7 +253,7 @@ var dossiers = map[string]dossier{
 		},
 	},
 	"bot:cilan": {
-		Image: "/img/trainers/cilan.png", Region: "Unova", Hometown: "Striaton City",
+		Image: "img/trainers/cilan.png", Region: "Unova", Hometown: "Striaton City",
 		Debut: "BW002 — Enter Iris and Axew!", Specialty: "Grass / Bug", Partner: "Pansage / Crustle",
 		Bio: "Grass-type Gym Leader of Striaton, professional Connoisseur, and the man who will tell you whether your Pokémon — or your portfolio — is sweet, bitter or over-steeped.",
 		Trivia: []string{
@@ -264,7 +264,7 @@ var dossiers = map[string]dossier{
 		},
 	},
 	"bot:goh": {
-		Image: "/img/trainers/goh.jpg", Region: "Kanto", Hometown: "Vermilion City",
+		Image: "img/trainers/goh.jpg", Region: "Kanto", Hometown: "Vermilion City",
 		Debut: "JN001 — Enter Pikachu!", Specialty: "Catching / index", Partner: "Cinderace / Grookey / Inteleon",
 		Bio: "Ash's Journeys partner and a researcher at Cerise Laboratory. Goh's goal is to catch every Pokémon — Mew first, if possible — so his book looks like a Pokédex with a brokerage account attached.",
 		Trivia: []string{
@@ -275,7 +275,7 @@ var dossiers = map[string]dossier{
 		},
 	},
 	"bot:tracey": {
-		Image: "/img/trainers/tracey.jpg", Region: "Orange Islands", Hometown: "Tangelo Island",
+		Image: "img/trainers/tracey.jpg", Region: "Orange Islands", Hometown: "Tangelo Island",
 		Debut: "EP084 — The Lost Lapras", Specialty: "Sketching / contrarian", Partner: "Scyther / Marill / Venonat",
 		Bio: "A Pokémon watcher who sketches more than he battles. Tracey joined Ash and Misty through the Orange Islands, then became Professor Oak's assistant in Pallet Town, which is a long way of saying he buys unloved names and waits.",
 		Trivia: []string{
